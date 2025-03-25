@@ -1,4 +1,4 @@
-# RouteFormer: Leveraging Driver Field-of-View for Multimodal Ego-Trajectory Prediction
+# Routeformer: Leveraging Driver Field-of-View for Multimodal Ego-Trajectory Prediction
 
 This repository will host the code and supplementary materials for our paper **"Leveraging Driver Field-of-View for Multimodal Ego-Trajectory Prediction"** accepted at ICLR 2025. It includes the implementation of our novel multimodal ego-trajectory prediction network, **Routeformer**, and will provide a link to the GEM dataset.
 
@@ -7,6 +7,7 @@ This repository will host the code and supplementary materials for our paper **"
 Understanding drivers' decision-making is crucial for road safety. While predicting an ego-vehicle’s path is important for driver-assistance systems, most existing methods focus primarily on external factors like other vehicles' motions. Our work addresses this limitation by integrating the driver's attention with the surrounding scene, combining GPS data, environmental context, and driver field-of-view information (first-person video and gaze fixations).
 
 In this repository, you will eventually find:
+
 - **Code:** The implementation of Routeformer and associated tools *(code coming soon)*.
 - **GEM Dataset:** A comprehensive dataset of urban driving scenarios enriched with synchronized driver field-of-view and gaze data. The link to the GEM dataset will be provided once available.
 
