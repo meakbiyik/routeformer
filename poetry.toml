@@ -1,0 +1,4 @@
+[virtualenvs]
+in-project = false
+[installer]
+no-binary = ["av"]

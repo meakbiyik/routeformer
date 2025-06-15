@@ -1,0 +1,114 @@
+[tool.poetry]
+name = "Routeformer"
+version = "0.1.0"
+description = "Routeformer: Leveraging Driver Field-of-View for Multimodal Ego-Trajectory Prediction"
+authors = ["M. Eren Akbiyik, Nedko Savov"]
+license = "MIT"
+packages = [
+    {include = "routeformer"}
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = "^1.24.2"
+natsort = "^8.4.0"
+matplotlib = "3.7.3"
+av = "^13.0.0"
+gopro2gpx = {git = "https://github.com/juanmcasillas/gopro2gpx"}
+scipy = "^1.10.1"
+csaps = "^1.1.0"
+msgpack = "^1.0.5"
+kornia = "^0.6.11"
+opencv-python-headless = "^4.7.0.72"
+contextily = "^1.3.0"
+frechetdist = "^0.6"
+segment-anything = { git = "https://github.com/facebookresearch/segment-anything"}
+brotli = "^1.0.9"
+einops = "^0.6.1"
+lightning = "2.4.0"
+timm = "^0.9.6"
+torchcache = "^0.5.1"
+lovely-tensors = "^0.1.15"
+lovely-numpy = "^0.2.10"
+ultralytics = "^8.1.7"
+pandas = {version = "^2.2.2", extras = ["performance"]}
+pympler = "^1.1"
+transformers = "^4.44.2"
+optuna = "^3.6.1"
+optuna-integration = "^3.6.0"
+captum = "^0.7.0"
+torch = "^2.7.1"
+torchvision = "^0.22.1"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.0.4"
+pytest = "^7.2.1"
+pytest-cov = "^4.0.0"
+pytest-datadir = "^1.4.1"
+coverage = "^7.1.0"
+flake8 = "^6.0.0"
+black = "^23.1.0"
+ipykernel = "^6.21.2"
+isort = "^5.12.0"
+osmnx = "^1.3.0"
+notebook = "^6.5.4"
+seaborn = "^0.12.2"
+statsmodels = "^0.14.0"
+sympy = "^1.12"
+memray = "^1.9.1"
+py-spy = "^0.3.14"
+wandb = "^0.17.7"
+
+[tool.black]
+target-version = ["py310"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.toml
+  | \.venv
+  | \.venv
+  | \.bzr
+  | \.direnv
+  | \.eggs
+  | \.nox
+  | \.svn
+  | __pypackages__
+  | node_modules
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+ensure_newline_before_comments = true
+line_length = 88
+skip = [
+  '.bzr', '.direnv', '.eggs', '.git', '.hg',
+  '.mypy_cache', '.nox', '.svn', '.tox', '.venv',
+  '__pypackages__', '_build', 'buck-out', 'build',
+  'dist', 'node_modules', 'venv'
+]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
+
+[tool.coverage.run]
+omit = [
+    "routeformer/**/__pycache__",
+]
+include = [
+    "routeformer/**",
+]
+
+[build-system]
+requires = ["poetry-core>=1.5.0"]
+build-backend = "poetry.core.masonry.api"
