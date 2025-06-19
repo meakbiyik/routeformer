@@ -4,11 +4,17 @@
 
 [![Website](docs/imgs/badges/badge_project_page.svg)](https://meakbiyik.com/routeformer/)
 [![Paper](docs/imgs/badges/badge_pdf.svg)](https://arxiv.org/abs/2312.08558)
-[![Paper](docs/imgs/badges/badge_dataset.svg)](https://huggingface.co/datasets/meakbiyik/GEM_gaze-assisted-ego-motion-in-driving)
+[![Dataset](docs/imgs/badges/badge_dataset.svg)](https://huggingface.co/datasets/meakbiyik/GEM_gaze-assisted-ego-motion-in-driving)
 
 </div>
 
 This repository will host the code and supplementary materials for our paper **"Leveraging Driver Field-of-View for Multimodal Ego-Trajectory Prediction"** accepted at ICLR 2025. It includes the implementation of our novel multimodal ego-trajectory prediction network, **Routeformer**, and the GEM dataset.
+
+<!-- limit to max-width of 400px -->
+
+<div align="center">
+<img src="docs/imgs/model.png" alt="Figure" style="max-width:auto; max-height:300px;" />
+</div>
 
 ## Overview
 
