@@ -34,4 +34,4 @@ for i, data in enumerate(dataset):
     optimizer.step()
 ```
 
-See the definition of the `GEMDataset` class in `routeformer/io/dataset.py` for more details and options. For the full example, see `examples/dataset_demo.py`.
+See the definition of the `GEMDataset` class in `routeformer/io/dataset.py` for more details and options. For the full example, see `experiments/full_comparison.py`.

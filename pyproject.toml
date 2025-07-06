@@ -39,6 +39,7 @@ optuna-integration = "^3.6.0"
 captum = "^0.7.0"
 torch = "^2.7.1"
 torchvision = "^0.22.1"
+wandb = "^0.17.7"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.0.4"
@@ -56,7 +57,6 @@ seaborn = "^0.12.2"
 statsmodels = "^0.14.0"
 sympy = "^1.12"
 py-spy = "^0.3.14"
-wandb = "^0.17.7"
 
 [tool.black]
 target-version = ["py310"]

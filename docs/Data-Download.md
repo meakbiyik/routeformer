@@ -1,15 +1,17 @@
 # Data download
 
-Data -which is currently residing in a Google Drive- can be downloaded via Python package `gdown`. First, install the package:
+Data can be downloaded from [Hugging Face Datasets](https://huggingface.co/datasets/meakbiyik/GEM_gaze-assisted-ego-motion-in-driving).
+
+To download the data, you can use the `datasets` library. First, install the library:
 
 ```bash
-pip install gdown
+pip install datasets
 ```
 
-Then, download the data in a folder by running the following command:
+Then, you can load the dataset in Python:
 
-```bash
-gdown --folder <folder link>
+```python
+from datasets import load_dataset
+
+dataset = load_dataset("meakbiyik/GEM_gaze-assisted-ego-motion-in-driving")
 ```
-
-Google Drive has a limiter on the number of downloads in short time periods (my experiments show that it is around 50 downloads in a couple of minutes). To manage that, download only the subfolders (e.g., download EyeGaze data of Subject 001, then Subject 002, etc.), rather than trying to download the whole thing. If you get an error message, wait a couple of minutes and try again.

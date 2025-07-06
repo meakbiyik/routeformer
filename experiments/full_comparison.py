@@ -358,63 +358,22 @@ class ParallelTrainer(L.LightningModule):
             video_backbone=SwinV2,
             configs=self.ROUTEFORMER_CONFIG_SWINV2_GAZE,
         )
-        # self.Routeformer_with_video_with_gaze_dinov2 = Routeformer(
-        #     gps_backbone=PatchTST if USE_PATCHTST_BACKBONE else Informer,
-        #     video_backbone=DinoV2,
-        #     configs=self.ROUTEFORMER_CONFIG_DINOV2_GAZE,
-        # )
-        # self.Routeformer_with_video_with_gaze_invform = Routeformer(
-        #     gps_backbone=PatchTST if USE_PATCHTST_BACKBONE else Informer,
-        #     video_backbone=InverseForm,
-        #     configs=self.ROUTEFORMER_CONFIG_INVFORM_GAZE,
-        # )
 
         self.AdaptedGIMO_swinv2 = AdaptedGIMO(
             video_backbone=SwinV2,
             configs=self.GIMO_CONFIG_SWINV2,
         )
-        # self.AdaptedGIMO_dinov2 = AdaptedGIMO(
-        #     video_backbone=DinoV2,
-        #     configs=self.GIMO_CONFIG_DINOV2,
-        # )
-        # self.AdaptedGIMO_invform = AdaptedGIMO(
-        #     video_backbone=InverseForm,
-        #     configs=self.GIMO_CONFIG_INVFORM,
-        # )
 
         self.MultiModalTransformer_swinv2 = MultiModalTransformer(
             video_backbone=SwinV2,
             configs=self.MULTIMODAL_TRANSFORMER_CONFIG_SWINV2,
         )
-        # self.MultiModalTransformer_dinov2 = MultiModalTransformer(
-        #     video_backbone=DinoV2,
-        #     configs=self.MULTIMODAL_TRANSFORMER_CONFIG_DINOV2,
-        # )
-        # self.MultiModalTransformer_invform = MultiModalTransformer(
-        #     video_backbone=InverseForm,
-        #     configs=self.MULTIMODAL_TRANSFORMER_CONFIG_INVFORM,
-        # )
 
         self.Routeformer_with_video_swinv2 = Routeformer(
             gps_backbone=PatchTST if USE_PATCHTST_BACKBONE else Informer,
             video_backbone=SwinV2,
             configs=self.ROUTEFORMER_CONFIG_SWINV2,
         )
-        # self.Routeformer_with_video_dinov2 = Routeformer(
-        #     gps_backbone=PatchTST if USE_PATCHTST_BACKBONE else Informer,
-        #     video_backbone=DinoV2,
-        #     configs=self.ROUTEFORMER_CONFIG_DINOV2,
-        # )
-        # self.Routeformer_with_video_sam = Routeformer(
-        #     gps_backbone=PatchTST if USE_PATCHTST_BACKBONE else Informer,
-        #     video_backbone=Sam,
-        #     configs=self.ROUTEFORMER_CONFIG_SAM,
-        # )
-        # self.Routeformer_with_video_invform = Routeformer(
-        #     gps_backbone=PatchTST if USE_PATCHTST_BACKBONE else Informer,
-        #     video_backbone=InverseForm,
-        #     configs=self.ROUTEFORMER_CONFIG_INVFORM,
-        # )
 
         self.AutoBotEgo = AutoBotAdapted(
             configs=self.ROUTEFORMER_CONFIG,
@@ -460,31 +419,18 @@ class ParallelTrainer(L.LightningModule):
             # ------------- Autoregressive models
             "Routeformer_with_video_with_gaze_swinv2_autoreg_4s": self.Routeformer_with_video_with_gaze_swinv2_autoreg_4s,  # noqa
             # ------------- Full Routeformer
-            # "Routeformer_with_video_with_gaze_invform": self.Routeformer_with_video_with_gaze_invform,  # noqa
             "Routeformer_with_video_with_gaze_swinv2": self.Routeformer_with_video_with_gaze_swinv2,  # noqa
-            # "Routeformer_with_video_with_gaze_dinov2": self.Routeformer_with_video_with_gaze_dinov2,  # noqa
             # ------------- Routeformer without scene
             "Routeformer_with_video_with_gaze_swinv2_wout_scene": self.Routeformer_with_video_with_gaze_swinv2_wout_scene,  # noqa
             # ------------- Adapted GIMO
-            # "AdaptedGIMO_invform": self.AdaptedGIMO_invform,
             "AdaptedGIMO_swinv2": self.AdaptedGIMO_swinv2,
-            # "AdaptedGIMO_dinov2": self.AdaptedGIMO_dinov2,
             # ------------- MultiModal Transformer
-            # "MultiModalTransformer_invform": self.MultiModalTransformer_invform,
             "MultiModalTransformer_swinv2": self.MultiModalTransformer_swinv2,
-            # "MultiModalTransformer_dinov2": self.MultiModalTransformer_dinov2,
             # ------------- Video-only models
-            # "Routeformer_with_video_invform": self.Routeformer_with_video_invform,
             "Routeformer_with_video_swinv2": self.Routeformer_with_video_swinv2,
-            # "Routeformer_with_video_dinov2": self.Routeformer_with_video_dinov2,
-            # "Routeformer_with_video_sam": self.Routeformer_with_video_sam,
             # ------------- GPS-only models
             "AutoBotEgo": self.AutoBotEgo,
             "Routeformer_without_video_informer": self.Routeformer_without_video_informer,
-            # "Routeformer_without_video_patchtst": self.Routeformer_without_video_patchtst,
-            # "Routeformer_without_video_transformer": self.Routeformer_without_video_transformer,
-            # "Routeformer_without_video_dlinear": self.Routeformer_without_video_dlinear,
-            # "Routeformer_without_video_nlinear": self.Routeformer_without_video_nlinear,
             # ------------- Simple baselines
             "stationary_baseline": self.stationary_baseline,
             "linear_baseline": self.linear_baseline,
@@ -874,13 +820,6 @@ if __name__ == "__main__":
             ]
         )
     callbacks = checkpoints
-    # callbacks.append(
-    #     EarlyStopping(
-    #         monitor="val_Routeformer_with_video_with_gaze_swinv2_ade",
-    #         patience=20,
-    #         mode="min",
-    #     )
-    # )
     trainer = L.Trainer(
         default_root_dir=LOGS_DIR,
         accelerator="gpu" if DEVICE == "cuda" else "auto",
