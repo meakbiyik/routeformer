@@ -265,7 +265,6 @@ class GEMDataset(torch.utils.data.Dataset):
         crop_videos: bool = True,
         undistort_videos: bool = True,
         stitch_videos: bool = False,
-        use_corrected_gps: bool = True,
         gopro_scaling_factor: float = 1.0,
         front_scaling_factor: float = 1.0,
         frame_transform: Optional[Callable] = None,
@@ -325,8 +324,6 @@ class GEMDataset(torch.utils.data.Dataset):
             Whether to undistort the video frames, by default False
         stitch_videos : bool, optional
             Whether to stitch all videos together, by default False
-        use_corrected_gps : bool, optional
-            Whether to use the corrected GPS data, by default True
         gopro_scaling_factor : float, optional
             Scaling factor to apply to the GoPro video frames, by default 1.0
         front_scaling_factor : float, optional
@@ -376,7 +373,6 @@ class GEMDataset(torch.utils.data.Dataset):
         self.crop_videos = crop_videos
         self.undistort_videos = undistort_videos
         self.stitch_videos = stitch_videos
-        self.use_corrected_gps = use_corrected_gps
         self.gopro_scaling_factor = gopro_scaling_factor
         self.front_scaling_factor = front_scaling_factor
         self.frame_transform = frame_transform
@@ -459,7 +455,6 @@ class GEMDataset(torch.utils.data.Dataset):
         logger.debug(f"Crop videos: {self.crop_videos}")
         logger.debug(f"Undistort videos: {self.undistort_videos}")
         logger.debug(f"Stitch videos: {self.stitch_videos}")
-        logger.debug(f"Use corrected GPS: {self.use_corrected_gps}")
         logger.debug(f"GoPro scaling factor: {self.gopro_scaling_factor}")
         logger.debug(f"World scaling factor: {self.front_scaling_factor}")
         logger.debug(f"Frame transform: {self.frame_transform}")
@@ -766,8 +761,6 @@ class GEMDataset(torch.utils.data.Dataset):
             logger.info(f"Read gaze metadata for subject {subject}")
 
             corrected_gps_samples = self.corrected_gps_samples[subject]
-            if not self.use_corrected_gps:
-                corrected_gps_samples = [None] * len(self.left_samples[subject])
 
             info = {}
             for left, right, corr_gps in zip(
@@ -1180,7 +1173,6 @@ class GEMDataset(torch.utils.data.Dataset):
             # relevant parameters
             repr(self.crop_videos)
             + repr(self.undistort_videos)
-            + repr(self.use_corrected_gps)
             + repr(self.stitch_videos)
             + repr(self.gopro_scaling_factor)
             + repr(self.front_scaling_factor)
@@ -1302,7 +1294,7 @@ class GEMDataset(torch.utils.data.Dataset):
         # Ensure that the frame counts are not shorter than expected
         end += 1 / self.VIDEO_FPS
 
-        need_to_read_video = self.with_video or self.with_audio or not self.use_corrected_gps
+        need_to_read_video = self.with_video or self.with_audio
 
         if need_to_read_video:
             logger.info(f"Reading video {left} from {start} to {end}")
@@ -2047,41 +2039,10 @@ class GEMDataset(torch.utils.data.Dataset):
             data["left_audio"] = left_data["audio"]
             data["right_audio"] = right_data["audio"]
 
-        if self.use_corrected_gps:
-            full_corrected_gps = self._get_full_corrected_gps(corr_gps)
-            # full_corrected_gps is a pandas Dataframe indexed by timestamp
-            # in POSIX time which can be accessed by range index
-            data["gps"] = full_corrected_gps[gps_start:gps_end].values
-        else:
-            left_gps = left_data["gps"]
-            right_gps = right_data["gps"]
-            # The columns for GPS data are:
-            # 0: timestamp (in seconds)
-            # 1: dilution of precision
-            # 2: latitude
-            # 3: longitude
-            # 4: speed
-            # 5: elevation
-            # interpolate gps data to align with video frames
-            # this is necessary because the gps data is sampled at a lower rate
-            # than the video frames. Use dilution as weights to interpolate
-            # the gps data
-            full_gps = np.concatenate([left_gps, right_gps], axis=0)
-            if full_gps.shape[0] > 0:
-                interp_gps = self._smoothly_interpolate_gps(full_gps, gps_start, gps_end)
-
-                if self.with_video and interp_gps.shape[0] != data["left_video"].shape[0]:
-                    logger.warning("Interpolated GPS length is not the same with video length")
-                    logger.info(f"GPS: {interp_gps.shape[0]}")
-                    logger.info(f"Video: {data['left_video'].shape[0]}")
-
-                interp_gps[:, :2] = self._convert_gps_coordinates(interp_gps[:, :2])
-
-            else:
-                logger.warning("No GPS data found")
-                interp_gps = np.zeros((data["left_video"].shape[0], 4))
-
-            data["gps"] = interp_gps
+        full_corrected_gps = self._get_full_corrected_gps(corr_gps)
+        # full_corrected_gps is a pandas Dataframe indexed by timestamp
+        # in POSIX time which can be accessed by range index
+        data["gps"] = full_corrected_gps[gps_start:gps_end].values
 
         return data
 
@@ -2273,7 +2234,10 @@ class GEMDataset(torch.utils.data.Dataset):
                 {"audio": 0},
             )
 
-        if container.streams.data and not self.use_corrected_gps:
+        # This code is not absolutely necessary, but it does not have a huge
+        # performance impact, so we can leave it here for anybody who might
+        # need the original GPS data
+        if container.streams.data:
             # Then this is the GoPro video
             # find the ID of the container with GPS data
             # which is the one that has the handler_name GoPro MET
@@ -2303,7 +2267,7 @@ class GEMDataset(torch.utils.data.Dataset):
                 container.streams.video[0].close()
             if container.streams.audio and self.with_audio:
                 container.streams.audio[0].close()
-            if container.streams.data and not self.use_corrected_gps:
+            if container.streams.data:
                 container.streams.data[gps_stream_id].close()
         except Exception as e:
             logger.warning(f"Error closing streams, error message from PyAV: {e}")
