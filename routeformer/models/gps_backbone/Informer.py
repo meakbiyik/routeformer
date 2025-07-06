@@ -14,6 +14,7 @@ from .layers.TransformerEncoderDecoder import (
     EncoderLayer,
 )
 
+
 class Informer(L.LightningModule):
     """Informer with Propspare attention in O(LlogL) complexity."""
 
@@ -148,11 +149,8 @@ class Informer(L.LightningModule):
                 dim=1,
             )
 
-
         x_mark_dec = (
-            torch.arange(
-                x_enc.shape[1] + self.pred_len, device=x_enc.device, dtype=torch.float32
-            )
+            torch.arange(x_enc.shape[1] + self.pred_len, device=x_enc.device, dtype=torch.float32)
             .repeat(x_dec.shape[0])
             .view(x_dec.shape[0], -1, 1)
         )
@@ -176,9 +174,7 @@ class TriangularCausalMask:
         """Initialize the mask."""
         mask_shape = [B, 1, L, L]
         with torch.no_grad():
-            self._mask = torch.triu(
-                torch.ones(mask_shape, dtype=torch.bool), diagonal=1
-            ).to(device)
+            self._mask = torch.triu(torch.ones(mask_shape, dtype=torch.bool), diagonal=1).to(device)
 
     @property
     def mask(self):

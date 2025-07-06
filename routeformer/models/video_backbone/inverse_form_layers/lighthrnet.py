@@ -47,6 +47,4 @@ class LightHighResolutionNet(OnlyHRNet):
 
 
 def HRNet16(num_classes, criterion, has_edge_head=False):
-    return LightHighResolutionNet(
-        num_classes, criterion=criterion, has_edge_head=has_edge_head
-    )
+    return LightHighResolutionNet(num_classes, criterion=criterion, has_edge_head=has_edge_head)

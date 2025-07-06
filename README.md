@@ -22,8 +22,40 @@ Understanding drivers' decision-making is crucial for road safety. While predict
 
 In this repository, you will eventually find:
 
-- **Code:** The implementation of Routeformer and associated tools *(code coming soon)*.
+- **Code:** The implementation of Routeformer and associated tools.
 - **GEM Dataset:** A comprehensive dataset of urban driving scenarios enriched with synchronized driver field-of-view and gaze data. The link to the GEM dataset will be provided once available.
+
+## Getting Started
+
+### Installation
+
+1. Clone the repository:
+
+    ```bash
+    git clone https://github.com/meakbiyik/routeformer.git
+    cd routeformer
+    ```
+
+2. Install the dependencies using [Poetry](https://python-poetry.org/):
+
+    ```bash
+    poetry install
+    ```
+
+    **Note on the `av` dependency:** This project uses the `av` library for video processing, which has `ffmpeg` as a dependency. If you have `ffmpeg` already installed on your system, you might encounter issues with the default installation. In that case, it is recommended to install `av` with the following command to avoid building it from source:
+
+    ```bash
+    pip install av --no-binary av
+    ```
+
+## Repository Structure
+
+Here's a brief overview of the most important files and directories:
+
+- `routeformer/models/routeformer.py`: This file contains the core implementation of the **Routeformer** model.
+- `experiments/full_comparison.py`: This is the main script to run the experiments and reproduce the results from the paper.
+- `routeformer/io/dataset.py`: Contains the dataset loading and processing logic.
+- `docs/`: Contains additional documentation, including details on the dataset and data extraction.
 
 ## Abstract
 

@@ -51,9 +51,7 @@ class AttrDict(dict):
                 self[name] = value
         else:
             raise AttributeError(
-                'Attempted to set "{}" to "{}", but AttrDict is immutable'.format(
-                    name, value
-                )
+                'Attempted to set "{}" to "{}", but AttrDict is immutable'.format(name, value)
             )
 
     def immutable(self, is_immutable):

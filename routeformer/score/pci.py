@@ -155,9 +155,7 @@ def estimate_regular_trajectory(
         The regular trajectory, time_steps x 2 array.
     """
     if input_trajectory.shape[0] < lookback_length:
-        raise ValueError(
-            "Lookback length is greater than the number of points in the trajectory."
-        )
+        raise ValueError("Lookback length is greater than the number of points in the trajectory.")
 
     lookback_points = input_trajectory[-lookback_length:]
     time = np.arange(lookback_length + time_steps) / frequency
@@ -168,9 +166,7 @@ def estimate_regular_trajectory(
 
     if curve_type == "constrained_quadratic":
         if constraints is None:
-            raise ValueError(
-                "Constraints must be provided if curve_type is constrained_quadratic."
-            )
+            raise ValueError("Constraints must be provided if curve_type is constrained_quadratic.")
 
         fit_x_params = fit_quadratic_with_constraints(
             input_time,
@@ -187,19 +183,14 @@ def estimate_regular_trajectory(
             domain=[time[0], time[-1]],
         )
 
-        fit_x = (
-            lambda t: fit_x_params[0] * t**2 + fit_x_params[1] * t + fit_x_params[2]
-        )
-        fit_y = (
-            lambda t: fit_y_params[0] * t**2 + fit_y_params[1] * t + fit_y_params[2]
-        )
+        fit_x = lambda t: fit_x_params[0] * t**2 + fit_x_params[1] * t + fit_x_params[2]
+        fit_y = lambda t: fit_y_params[0] * t**2 + fit_y_params[1] * t + fit_y_params[2]
 
     else:
         degree = {"linear": 1, "quadratic": 2}.get(curve_type)
         if degree is None:
             raise ValueError(
-                "Invalid curve_type. Choose from 'linear', "
-                "'quadratic', 'constrained_quadratic'."
+                "Invalid curve_type. Choose from 'linear', " "'quadratic', 'constrained_quadratic'."
             )
 
         # Fit the polynomial for x and y separately using Polynomial.fit
@@ -277,9 +268,7 @@ def estimate_pci(
         constraints,
         frequency,
     )
-    trajectory_pci = pci(
-        target_trajectory, regular_trajectory, measure
-    )
+    trajectory_pci = pci(target_trajectory, regular_trajectory, measure)
     if return_regular_trajectory:
         return trajectory_pci, regular_trajectory
     else:

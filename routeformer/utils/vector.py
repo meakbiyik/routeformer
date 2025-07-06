@@ -72,14 +72,15 @@ def estimate_angle(tensor: torch.Tensor) -> torch.Tensor:
     # reshape the tensor to (*, 2)
     original_shape = tensor.shape[:-1]
     tensor = tensor.reshape(-1, 2)
-    
+
     # get the angle of the tensor
     angle = torch.atan2(tensor[:, 1], tensor[:, 0])
-    
+
     # reshape the tensor back to (*, 1)
     angle = angle.reshape(*original_shape, 1)
 
     return angle
+
 
 def estimate_angle_and_norm(tensor: torch.Tensor) -> torch.Tensor:
     """Estimate the angle and norm of a vector tensor.
@@ -101,7 +102,7 @@ def estimate_angle_and_norm(tensor: torch.Tensor) -> torch.Tensor:
     # reshape the tensor to (*, 2)
     original_shape = tensor.shape[:-1]
     tensor = tensor.reshape(-1, 2)
-    
+
     # get the angle and norm of the tensor
     angle = torch.atan2(tensor[:, 1], tensor[:, 0])
     norm = torch.norm(tensor, dim=1)

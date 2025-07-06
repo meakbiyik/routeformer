@@ -12,9 +12,7 @@ class TriangularCausalMask:
     def __init__(self, B, L, device="cpu"):
         mask_shape = [B, 1, L, L]
         with torch.no_grad():
-            self._mask = torch.triu(
-                torch.ones(mask_shape, dtype=torch.bool), diagonal=1
-            ).to(device)
+            self._mask = torch.triu(torch.ones(mask_shape, dtype=torch.bool), diagonal=1).to(device)
 
     @property
     def mask(self):
@@ -94,13 +92,9 @@ class ProbAttention(nn.Module):
 
         # calculate the sampled Q_K
         K_expand = K.unsqueeze(-3).expand(B, H, L_Q, L_K, E)
-        index_sample = torch.randint(
-            L_K, (L_Q, sample_k)
-        )  # real U = U_part(factor*ln(L_k))*L_q
+        index_sample = torch.randint(L_K, (L_Q, sample_k))  # real U = U_part(factor*ln(L_k))*L_q
         K_sample = K_expand[:, :, torch.arange(L_Q).unsqueeze(1), index_sample, :]
-        Q_K_sample = torch.matmul(Q.unsqueeze(-2), K_sample.transpose(-2, -1)).squeeze(
-            -2
-        )
+        Q_K_sample = torch.matmul(Q.unsqueeze(-2), K_sample.transpose(-2, -1)).squeeze(-2)
 
         # find the Top_k query with sparisty measurement
         M = Q_K_sample.max(-1)[0] - torch.div(Q_K_sample.sum(-1), L_K)
@@ -139,9 +133,7 @@ class ProbAttention(nn.Module):
         ] = torch.matmul(attn, V).type_as(context_in)
         if self.output_attention:
             attns = (torch.ones([B, H, L_V, L_V]) / L_V).type_as(attn).to(attn.device)
-            attns[
-                torch.arange(B)[:, None, None], torch.arange(H)[None, :, None], index, :
-            ] = attn
+            attns[torch.arange(B)[:, None, None], torch.arange(H)[None, :, None], index, :] = attn
             return (context_in, attns)
         else:
             return (context_in, None)
@@ -169,17 +161,13 @@ class ProbAttention(nn.Module):
         # get the context
         context = self._get_initial_context(values, L_Q)
         # update the context with selected top_k queries
-        context, attn = self._update_context(
-            context, values, scores_top, index, L_Q, attn_mask
-        )
+        context, attn = self._update_context(context, values, scores_top, index, L_Q, attn_mask)
 
         return context.transpose(2, 1).contiguous(), attn
 
 
 class AttentionLayer(nn.Module):
-    def __init__(
-        self, attention, d_model, n_heads, d_keys=None, d_values=None, mix=False
-    ):
+    def __init__(self, attention, d_model, n_heads, d_keys=None, d_values=None, mix=False):
         super(AttentionLayer, self).__init__()
 
         d_keys = d_keys or (d_model // n_heads)
@@ -236,9 +224,7 @@ class DecoderLayer(nn.Module):
         x = x + self.dropout(self.self_attention(x, x, x, attn_mask=x_mask)[0])
         x = self.norm1(x)
 
-        x = x + self.dropout(
-            self.cross_attention(x, cross, cross, attn_mask=cross_mask)[0]
-        )
+        x = x + self.dropout(self.cross_attention(x, cross, cross, attn_mask=cross_mask)[0])
 
         y = x = self.norm2(x)
         y = self.dropout(self.activation(self.conv1(y.transpose(-1, 1))))
@@ -319,9 +305,7 @@ class Encoder(nn.Module):
     def __init__(self, attn_layers, conv_layers=None, norm_layer=None):
         super(Encoder, self).__init__()
         self.attn_layers = nn.ModuleList(attn_layers)
-        self.conv_layers = (
-            nn.ModuleList(conv_layers) if conv_layers is not None else None
-        )
+        self.conv_layers = nn.ModuleList(conv_layers) if conv_layers is not None else None
         self.norm = norm_layer
 
     def forward(self, x, attn_mask=None):
@@ -353,9 +337,7 @@ class PositionalEmbedding(nn.Module):
         pe.require_grad = False
 
         position = torch.arange(0, max_len).float().unsqueeze(1)
-        div_term = (
-            torch.arange(0, d_model, 2).float() * -(math.log(10000.0) / d_model)
-        ).exp()
+        div_term = (torch.arange(0, d_model, 2).float() * -(math.log(10000.0) / d_model)).exp()
 
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
@@ -380,13 +362,12 @@ class TokenEmbedding(nn.Module):
         )
         for m in self.modules():
             if isinstance(m, nn.Conv1d):
-                nn.init.kaiming_normal_(
-                    m.weight, mode="fan_in", nonlinearity="leaky_relu"
-                )
+                nn.init.kaiming_normal_(m.weight, mode="fan_in", nonlinearity="leaky_relu")
 
     def forward(self, x):
         x = self.tokenConv(x.permute(0, 2, 1)).transpose(1, 2)
         return x
+
 
 class PerceiveEncoder(nn.Module):
     def __init__(
@@ -450,6 +431,7 @@ class PerceiveEncoder(nn.Module):
             return enc_out[:, -self.pred_len :, :], attns
         else:
             return enc_out[:, -self.pred_len :, :]  # [B, L, D]
+
 
 class PerceiveDecoder(nn.Module):
     def __init__(

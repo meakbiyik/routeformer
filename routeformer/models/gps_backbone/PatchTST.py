@@ -213,4 +213,4 @@ class PatchTST(L.LightningModule):
             x = self.model(x)
             x = x.permute(0, 2, 1)  # x: [Batch, Input length, Channel]
         x = self.projection(x)
-        return x[:, :self.pred_len, :]
+        return x[:, : self.pred_len, :]

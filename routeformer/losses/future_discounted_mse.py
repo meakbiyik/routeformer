@@ -2,7 +2,6 @@
 from typing import Dict, Union
 
 import lightning as pl
-
 import torch
 import torch.nn as nn
 
@@ -42,19 +41,15 @@ class FutureDiscountedLoss(pl.LightningModule):
         """
         super().__init__()
         self.current_discount_factor = (
-            discount_factor
-            if isinstance(discount_factor, float)
-            else discount_factor[0]
+            discount_factor if isinstance(discount_factor, float) else discount_factor[0]
         )
-        self.discount_factor_dict = (
-            discount_factor if isinstance(discount_factor, dict) else {}
-        )
+        self.discount_factor_dict = discount_factor if isinstance(discount_factor, dict) else {}
         self.epsilon = epsilon
         self.loss_function = loss_function
 
         if self.loss_function not in ["mae", "mse", "smooth_l1"]:
             raise ValueError(f"Unknown loss function {self.loss_function}")
-        
+
         if self.loss_function == "smooth_l1":
             self.loss = nn.SmoothL1Loss(reduction="none")
 
@@ -88,9 +83,7 @@ class FutureDiscountedLoss(pl.LightningModule):
 
         # ignore errors smaller than epsilon
         error = y_pred - y_true
-        error = torch.where(
-            torch.abs(error) < self.epsilon, torch.zeros_like(error), error
-        )
+        error = torch.where(torch.abs(error) < self.epsilon, torch.zeros_like(error), error)
 
         if self.loss_function == "mae":
             return torch.abs(error).mul_(factors).mean()

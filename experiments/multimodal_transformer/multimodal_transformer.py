@@ -86,9 +86,7 @@ class MultiModalTransformer(nn.Module):
         )  # we also use median downsampling as with GIMO
         gaze_feats = self.gaze_linear(gazes)
 
-        feats = torch.cat(
-            [motion_feats, scene_feats, gaze_video_feats, gaze_feats], axis=2
-        )
+        feats = torch.cat([motion_feats, scene_feats, gaze_video_feats, gaze_feats], axis=2)
 
         output = self.transformer(feats)
 
@@ -117,11 +115,12 @@ class MultiModalTransformer(nn.Module):
             dim=1,
         )
         video_features = self.frame_encoder(video_features)
-        video_features = video_features.view(
-            batch_size, -1, self.configs.image_embedding_size
-        ).to(gps_backbone_dtype)
+        video_features = video_features.view(batch_size, -1, self.configs.image_embedding_size).to(
+            gps_backbone_dtype
+        )
 
         return video_features
+
 
 if __name__ == "__main__":
     ROUTEFORMER_CONFIG = RouteformerConfig(

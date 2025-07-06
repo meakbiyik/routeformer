@@ -74,9 +74,7 @@ class series_decomp_multi(nn.Module):
             moving_avg = func(x)
             moving_mean.append(moving_avg.unsqueeze(-1))
         moving_mean = torch.cat(moving_mean, dim=-1)
-        moving_mean = torch.sum(
-            moving_mean * nn.Softmax(-1)(self.layer(x.unsqueeze(-1))), dim=-1
-        )
+        moving_mean = torch.sum(moving_mean * nn.Softmax(-1)(self.layer(x.unsqueeze(-1))), dim=-1)
         res = x - moving_mean
         return res, moving_mean
 
@@ -98,12 +96,8 @@ class EncoderLayer(nn.Module):
         super(EncoderLayer, self).__init__()
         d_ff = d_ff or 4 * d_model
         self.attention = attention
-        self.conv1 = nn.Conv1d(
-            in_channels=d_model, out_channels=d_ff, kernel_size=1, bias=False
-        )
-        self.conv2 = nn.Conv1d(
-            in_channels=d_ff, out_channels=d_model, kernel_size=1, bias=False
-        )
+        self.conv1 = nn.Conv1d(in_channels=d_model, out_channels=d_ff, kernel_size=1, bias=False)
+        self.conv2 = nn.Conv1d(in_channels=d_ff, out_channels=d_model, kernel_size=1, bias=False)
 
         if isinstance(moving_avg, list):
             self.decomp1 = series_decomp_multi(moving_avg)
@@ -134,9 +128,7 @@ class Encoder(nn.Module):
     def __init__(self, attn_layers, conv_layers=None, norm_layer=None):
         super(Encoder, self).__init__()
         self.attn_layers = nn.ModuleList(attn_layers)
-        self.conv_layers = (
-            nn.ModuleList(conv_layers) if conv_layers is not None else None
-        )
+        self.conv_layers = nn.ModuleList(conv_layers) if conv_layers is not None else None
         self.norm = norm_layer
 
     def forward(self, x, attn_mask=None):
@@ -179,12 +171,8 @@ class DecoderLayer(nn.Module):
         d_ff = d_ff or 4 * d_model
         self.self_attention = self_attention
         self.cross_attention = cross_attention
-        self.conv1 = nn.Conv1d(
-            in_channels=d_model, out_channels=d_ff, kernel_size=1, bias=False
-        )
-        self.conv2 = nn.Conv1d(
-            in_channels=d_ff, out_channels=d_model, kernel_size=1, bias=False
-        )
+        self.conv1 = nn.Conv1d(in_channels=d_model, out_channels=d_ff, kernel_size=1, bias=False)
+        self.conv2 = nn.Conv1d(in_channels=d_ff, out_channels=d_model, kernel_size=1, bias=False)
 
         if isinstance(moving_avg, list):
             self.decomp1 = series_decomp_multi(moving_avg)
@@ -211,9 +199,7 @@ class DecoderLayer(nn.Module):
         x = x + self.dropout(self.self_attention(x, x, x, attn_mask=x_mask)[0])
 
         x, trend1 = self.decomp1(x)
-        x = x + self.dropout(
-            self.cross_attention(x, cross, cross, attn_mask=cross_mask)[0]
-        )
+        x = x + self.dropout(self.cross_attention(x, cross, cross, attn_mask=cross_mask)[0])
 
         x, trend2 = self.decomp2(x)
         y = x
@@ -222,9 +208,7 @@ class DecoderLayer(nn.Module):
         x, trend3 = self.decomp3(x + y)
 
         residual_trend = trend1 + trend2 + trend3
-        residual_trend = self.projection(residual_trend.permute(0, 2, 1)).transpose(
-            1, 2
-        )
+        residual_trend = self.projection(residual_trend.permute(0, 2, 1)).transpose(1, 2)
         return x, residual_trend
 
 

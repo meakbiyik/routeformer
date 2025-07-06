@@ -10,9 +10,7 @@ class TriangularCausalMask:
     def __init__(self, B, L, device="cpu"):
         mask_shape = [B, 1, L, L]
         with torch.no_grad():
-            self._mask = torch.triu(
-                torch.ones(mask_shape, dtype=torch.bool), diagonal=1
-            ).to(device)
+            self._mask = torch.triu(torch.ones(mask_shape, dtype=torch.bool), diagonal=1).to(device)
 
     @property
     def mask(self):
@@ -93,9 +91,7 @@ class ProbAttention(nn.Module):
 
         # calculate the sampled Q_K
         K_expand = K.unsqueeze(-3).expand(B, H, L_Q, L_K, E)
-        index_sample = torch.randint(
-            L_K, (L_Q, sample_k)
-        )  # real U = U_part(factor*ln(L_k))*L_q
+        index_sample = torch.randint(L_K, (L_Q, sample_k))  # real U = U_part(factor*ln(L_k))*L_q
         K_sample = K_expand[:, :, torch.arange(L_Q).unsqueeze(1), index_sample, :]
         Q_K_sample = torch.matmul(Q.unsqueeze(-2), K_sample.transpose(-2, -1)).squeeze()
 
@@ -136,9 +132,7 @@ class ProbAttention(nn.Module):
         ] = torch.matmul(attn, V).type_as(context_in)
         if self.output_attention:
             attns = (torch.ones([B, H, L_V, L_V]) / L_V).type_as(attn).to(attn.device)
-            attns[
-                torch.arange(B)[:, None, None], torch.arange(H)[None, :, None], index, :
-            ] = attn
+            attns[torch.arange(B)[:, None, None], torch.arange(H)[None, :, None], index, :] = attn
             return (context_in, attns)
         else:
             return (context_in, None)
@@ -166,9 +160,7 @@ class ProbAttention(nn.Module):
         # get the context
         context = self._get_initial_context(values, L_Q)
         # update the context with selected top_k queries
-        context, attn = self._update_context(
-            context, values, scores_top, index, L_Q, attn_mask
-        )
+        context, attn = self._update_context(context, values, scores_top, index, L_Q, attn_mask)
 
         return context.contiguous(), attn
 

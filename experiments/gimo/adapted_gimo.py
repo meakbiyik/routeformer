@@ -5,10 +5,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from routeformer.models.config import RouteformerConfig
+from routeformer.models.cross_modal_transformer import PerceiveEncoder as BetterPerceiveEncoder
 from routeformer.models.gps_backbone.config import GPSBackboneConfig
 from routeformer.models.video_backbone import SwinV2, VideoBackboneModule
 from routeformer.models.video_backbone.config import TimmBackboneConfig
-from routeformer.models.cross_modal_transformer import PerceiveEncoder as BetterPerceiveEncoder
 from routeformer.utils.filter import median_downsampler
 
 from .base_cross_model import *
@@ -96,7 +96,7 @@ class AdaptedGIMO(nn.Module):
             n_latent_channels=configs.encoder_hidden_size,
             dropout=configs.feature_dropout,
         )
-    
+
         # if self.use_gaze:
         self.gaze_linear = nn.Linear(2, configs.encoder_hidden_size)
         self.gaze_encoder = PerceiveEncoder(
@@ -144,9 +144,13 @@ class AdaptedGIMO(nn.Module):
 
         left = batch["left_video"]
         right = batch.get("right_video", left)
-        left_feats, right_feats = self._forward_single_video(left), self._forward_single_video(right)
+        left_feats, right_feats = self._forward_single_video(left), self._forward_single_video(
+            right
+        )
         scene_feats = torch.cat([left_feats, right_feats], dim=2)
-        scene_global_feats = scene_feats[:, -1:, :].repeat(1, self.configs.gps_backbone_config.pred_len, 1)
+        scene_global_feats = scene_feats[:, -1:, :].repeat(
+            1, self.configs.gps_backbone_config.pred_len, 1
+        )
 
         motion_feats = self.motion_linear(motions)
         motion_scene_feats = self.motion_scene_decoder(motion_feats, scene_feats)
@@ -155,20 +159,14 @@ class AdaptedGIMO(nn.Module):
 
         front = batch["front_video"]
         raw_gaze = batch["gaze"].to(torch.float32)  # B x longer_than_seq_len x 2
-        gazes = median_downsampler(
-            raw_gaze, self.configs.gps_backbone_config.seq_len
-        )
+        gazes = median_downsampler(raw_gaze, self.configs.gps_backbone_config.seq_len)
         front_feats = self._forward_single_video(front)
         gaze_embedding = self.gaze_linear(gazes)
         gaze_embedding = self.gaze_scene_decoder(gaze_embedding, front_feats)
         gaze_embedding = self.gaze_encoder(gaze_embedding)
 
-        gaze_motion_embedding = self.gaze_motion_decoder(
-            gaze_embedding, motion_embedding
-        )
-        motion_gaze_embedding = self.motion_gaze_decoder(
-            motion_embedding, gaze_embedding
-        )
+        gaze_motion_embedding = self.gaze_motion_decoder(gaze_embedding, motion_embedding)
+        motion_gaze_embedding = self.motion_gaze_decoder(motion_embedding, gaze_embedding)
 
         cross_modal_embedding = torch.cat(
             [scene_global_feats, gaze_motion_embedding, motion_gaze_embedding],
@@ -204,9 +202,9 @@ class AdaptedGIMO(nn.Module):
             dim=1,
         )
         video_features = self.frame_encoder(video_features)
-        video_features = video_features.view(
-            batch_size, -1, self.configs.image_embedding_size
-        ).to(gps_backbone_dtype)
+        video_features = video_features.view(batch_size, -1, self.configs.image_embedding_size).to(
+            gps_backbone_dtype
+        )
 
         return video_features
 

@@ -54,9 +54,7 @@ class Routeformer(L.LightningModule):
             )
 
         if self.with_video:
-            self.video_backbone = video_backbone(
-                configs=self.configs.video_backbone_config
-            )
+            self.video_backbone = video_backbone(configs=self.configs.video_backbone_config)
 
             self.frame_encoder = PerceiveEncoder(
                 in_channels=self.video_backbone.output_feature_shape[0],
@@ -192,13 +190,11 @@ class Routeformer(L.LightningModule):
 
             self.gps_backbone.pred_len = pred_len
 
-            future_gps_positions = torch.cat([output[0] for output in outputs], dim=1)[
-                :, :pred_len
-            ]
+            future_gps_positions = torch.cat([output[0] for output in outputs], dim=1)[:, :pred_len]
             if self.with_video:
-                future_visual_features = torch.cat(
-                    [output[1] for output in outputs], dim=1
-                )[:, :pred_len]
+                future_visual_features = torch.cat([output[1] for output in outputs], dim=1)[
+                    :, :pred_len
+                ]
 
         if self.configs.dense_prediction:
             return (future_gps_positions, future_visual_features)
@@ -223,14 +219,16 @@ class Routeformer(L.LightningModule):
         acceleration = F.pad(acceleration, (0, 0, 1, 0))
         if self.configs.rotate_motion:
             motion_dynamics = rotate(motion_dynamics, -origin_angles)
-    
-        motion_dynamics = torch.cat([motion_dynamics, normalized_angles, norm, acceleration], dim=-1)
+
+        motion_dynamics = torch.cat(
+            [motion_dynamics, normalized_angles, norm, acceleration], dim=-1
+        )
 
         inputs = [motion_dynamics]
 
         if self.with_video:
             inputs.append(visual_features)
-        
+
         if self.configs._only_motion:
             inputs[-1] = torch.zeros_like(inputs[-1])
 
@@ -247,7 +245,7 @@ class Routeformer(L.LightningModule):
                 output = output + input[:, -1:, :]
             else:
                 output = output + input[:, -1:, :2]
-        
+
         if self.configs.rotate_motion:
             output[:, :, :2] = rotate(output[:, :, :2], origin_angles)
 
@@ -286,9 +284,7 @@ class Routeformer(L.LightningModule):
         motion_vector = gps[:, 1:, :] - gps[:, :-1, :]
 
         if self.configs.normalize_motion:
-            motion_vector = (
-                motion_vector - self.configs.motion_mean
-            ) / self.configs.motion_std
+            motion_vector = (motion_vector - self.configs.motion_mean) / self.configs.motion_std
 
         motion_dynamics = motion_vector
         # pad the dynamics with zeros in the temporal dimension
@@ -331,7 +327,7 @@ class Routeformer(L.LightningModule):
                 gaze_features = gaze_features[:, :input_sequence_length]
 
             visual_features.append(gaze_features)
-        
+
         if self.with_video:
             # visual features are a list of [left, right, gaze], gaze optional
             # let's add the embeddings to them before allowing self attention
@@ -374,9 +370,7 @@ class Routeformer(L.LightningModule):
                 future_motion_vector * self.configs.motion_std
             ) + self.configs.motion_mean
         # integrate the motion vectors to get the future GPS coordinates
-        future_gps_positions = last_input_gps + torch.cumsum(
-            future_motion_vector, dim=1
-        )
+        future_gps_positions = last_input_gps + torch.cumsum(future_motion_vector, dim=1)
         future_gps_positions = future_gps_positions.to(last_input_gps.dtype)
         output = output[:, :, 2:]
 
@@ -389,7 +383,7 @@ class Routeformer(L.LightningModule):
             )
             future_visual_features = output[:, :, : self.configs.image_embedding_size]
             output = output[:, :, self.configs.image_embedding_size :]
-    
+
         assert (
             output.shape[-1] == 0
         ), f"Output should be empty at this point, but is {output.shape}."  # noqa: E501
@@ -437,9 +431,9 @@ class Routeformer(L.LightningModule):
         left_features = left_features.view(batch_size, -1, left_features.shape[-1]).to(
             gps_backbone_dtype
         )
-        right_features = right_features.view(
-            batch_size, -1, right_features.shape[-1]
-        ).to(gps_backbone_dtype)
+        right_features = right_features.view(batch_size, -1, right_features.shape[-1]).to(
+            gps_backbone_dtype
+        )
 
         # Now, we will create a zeros tensor with the same shape as the original
         # video, and fill it with the features.
@@ -492,9 +486,7 @@ class Routeformer(L.LightningModule):
                 dim=1,
             )
             video_features = self.frame_encoder(video_features)
-            video_features = video_features.view(
-                video.shape[0], self.configs.image_embedding_size
-            )
+            video_features = video_features.view(video.shape[0], self.configs.image_embedding_size)
 
         return video_features
 
@@ -520,9 +512,9 @@ class Routeformer(L.LightningModule):
         video_features = self._forward_single_video(video, False, training)
 
         gps_backbone_dtype = self.gps_backbone.parameters().__next__().dtype
-        video_features = video_features.view(
-            batch_size, -1, video_features.shape[-1]
-        ).to(gps_backbone_dtype)
+        video_features = video_features.view(batch_size, -1, video_features.shape[-1]).to(
+            gps_backbone_dtype
+        )
 
         # Now, we will create a zeros tensor with the same shape as the original
         # video, and fill it with the features.

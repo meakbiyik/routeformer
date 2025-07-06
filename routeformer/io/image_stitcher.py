@@ -54,9 +54,7 @@ class CV2RANSAC(torch.nn.Module):
 class ImageStitcher(kornia.contrib.ImageStitcher):
     """Image stitcher module that can admit a homography matrix."""
 
-    def __init__(
-        self, matcher, estimator: str = "ransac", blending_method: str = "naive"
-    ) -> None:
+    def __init__(self, matcher, estimator: str = "ransac", blending_method: str = "naive") -> None:
         """Initialize the image stitcher module."""
         super().__init__(matcher, estimator, blending_method)
 

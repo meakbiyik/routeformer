@@ -102,9 +102,7 @@ def eval_metrics(iou_acc, net, val_loss, epoch, arch, mf_score=None):
         "{:4}: [epoch {}], [val loss {:0.5f}], [acc {:0.5f}], "
         "[acc_cls {:.5f}], [mean_iu {:.5f}], [fwavacc {:0.5f}]"
     )
-    current_scores = fmt_str.format(
-        "mIoU", epoch, val_loss.avg, acc, acc_cls, mean_iu, fwavacc
-    )
+    current_scores = fmt_str.format("mIoU", epoch, val_loss.avg, acc, acc_cls, mean_iu, fwavacc)
 
 
 class ImageDumper:

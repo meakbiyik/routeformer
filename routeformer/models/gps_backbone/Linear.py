@@ -106,9 +106,7 @@ class DLinear(nn.Module):
             Prediction. Shape: [Batch, Prediction length, Channel]
         """
         seasonal_init, trend_init = self.decomposition(x)
-        seasonal_init, trend_init = seasonal_init.permute(0, 2, 1), trend_init.permute(
-            0, 2, 1
-        )
+        seasonal_init, trend_init = seasonal_init.permute(0, 2, 1), trend_init.permute(0, 2, 1)
         if self.individual:
             seasonal_output = torch.zeros(
                 [seasonal_init.size(0), seasonal_init.size(1), self.pred_len],
@@ -119,9 +117,7 @@ class DLinear(nn.Module):
                 dtype=trend_init.dtype,
             ).to(trend_init.device)
             for i in range(self.channels):
-                seasonal_output[:, i, :] = self.Linear_Seasonal[i](
-                    seasonal_init[:, i, :]
-                )
+                seasonal_output[:, i, :] = self.Linear_Seasonal[i](seasonal_init[:, i, :])
                 trend_output[:, i, :] = self.Linear_Trend[i](trend_init[:, i, :])
         else:
             seasonal_output = self.Linear_Seasonal(seasonal_init)
@@ -172,9 +168,7 @@ class NLinear(nn.Module):
         seq_last = x[:, -1:, :].detach()
         x = x - seq_last
         if self.individual:
-            output = torch.zeros(
-                [x.size(0), self.pred_len, x.size(2)], dtype=x.dtype
-            ).to(x.device)
+            output = torch.zeros([x.size(0), self.pred_len, x.size(2)], dtype=x.dtype).to(x.device)
             for i in range(self.channels):
                 output[:, :, i] = self.Linear[i](x[:, :, i])
             x = output

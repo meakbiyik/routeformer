@@ -55,24 +55,24 @@ class TimmBackbone(VideoBackboneModule):
             self.Backbone.eval()
             self.Backbone.requires_grad_(False)
         else:
-            self.train_transforms = transforms.Compose([
-                transforms.RandomAdjustSharpness(sharpness_factor=2, p=0.5),
-                transforms.RandomAutocontrast(p=0.5),
-                transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
-                transforms.RandomErasing(p=1.0, scale=(0.02, 0.2), ratio=(0.3, 3.3), value=0, inplace=False),
-            ])
+            self.train_transforms = transforms.Compose(
+                [
+                    transforms.RandomAdjustSharpness(sharpness_factor=2, p=0.5),
+                    transforms.RandomAutocontrast(p=0.5),
+                    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
+                    transforms.RandomErasing(
+                        p=1.0, scale=(0.02, 0.2), ratio=(0.3, 3.3), value=0, inplace=False
+                    ),
+                ]
+            )
 
         # we remove transforms.ToTensor() from the transforms pipeline
         # because images are already tensors
         self.transforms.transforms = [
-            t
-            for t in self.transforms.transforms
-            if not isinstance(t, transforms.ToTensor)
+            t for t in self.transforms.transforms if not isinstance(t, transforms.ToTensor)
         ]
 
-        self.outputs_bhwc = (
-            "swin" in configs.model_type and "_cr" not in configs.model_type
-        )
+        self.outputs_bhwc = "swin" in configs.model_type and "_cr" not in configs.model_type
         self.outputs_bpc = (
             "dino" in configs.model_type
         )  # DINO outputs BxPxC, where P is the patch count
@@ -140,9 +140,7 @@ class TimmBackbone(VideoBackboneModule):
         # Re-arrange the batch dimensions
         # Cast it just in case to the same dtype as the input, who knows
         # what happens in the torch.autocast context manager
-        embeddings = embeddings.reshape(-1, *self.output_feature_shape).to(
-            dtype=images.dtype
-        )
+        embeddings = embeddings.reshape(-1, *self.output_feature_shape).to(dtype=images.dtype)
 
         return embeddings
 

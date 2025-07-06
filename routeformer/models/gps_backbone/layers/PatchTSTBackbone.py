@@ -330,9 +330,7 @@ class TSTEncoder(nn.Module):
             return output
         else:
             for mod in self.layers:
-                output = mod(
-                    output, key_padding_mask=key_padding_mask, attn_mask=attn_mask
-                )
+                output = mod(output, key_padding_mask=key_padding_mask, attn_mask=attn_mask)
             return output
 
 
@@ -393,9 +391,7 @@ class TSTEncoderLayer(nn.Module):
         # Add & Norm
         self.dropout_ffn = nn.Dropout(dropout)
         if "batch" in norm.lower():
-            self.norm_ffn = nn.Sequential(
-                Transpose(1, 2), nn.BatchNorm1d(d_model), Transpose(1, 2)
-            )
+            self.norm_ffn = nn.Sequential(Transpose(1, 2), nn.BatchNorm1d(d_model), Transpose(1, 2))
         else:
             self.norm_ffn = nn.LayerNorm(d_model)
 
@@ -429,9 +425,7 @@ class TSTEncoderLayer(nn.Module):
         if self.store_attn:
             self.attn = attn
         # Add & Norm
-        src = src + self.dropout_attn(
-            src2
-        )  # Add: residual connection with residual dropout
+        src = src + self.dropout_attn(src2)  # Add: residual connection with residual dropout
         if not self.pre_norm:
             src = self.norm_attn(src)
 
@@ -441,9 +435,7 @@ class TSTEncoderLayer(nn.Module):
         # Position-wise Feed-Forward
         src2 = self.ff(src)
         # Add & Norm
-        src = src + self.dropout_ffn(
-            src2
-        )  # Add: residual connection with residual dropout
+        src = src + self.dropout_ffn(src2)  # Add: residual connection with residual dropout
         if not self.pre_norm:
             src = self.norm_ffn(src)
 
@@ -493,9 +485,7 @@ class _MultiheadAttention(nn.Module):
         )
 
         # Poject output
-        self.to_out = nn.Sequential(
-            nn.Linear(n_heads * d_v, d_model), nn.Dropout(proj_dropout)
-        )
+        self.to_out = nn.Sequential(nn.Linear(n_heads * d_v, d_model), nn.Dropout(proj_dropout))
 
     def forward(
         self,
@@ -556,9 +546,7 @@ class _ScaledDotProductAttention(nn.Module):
     (Realformer: Transformer likes residual attention by He et al, 2020) and locality self sttention (Vision Transformer for Small-Size Datasets
     by Lee et al, 2021)"""
 
-    def __init__(
-        self, d_model, n_heads, attn_dropout=0.0, res_attention=False, lsa=False
-    ):
+    def __init__(self, d_model, n_heads, attn_dropout=0.0, res_attention=False, lsa=False):
         super().__init__()
         self.attn_dropout = nn.Dropout(attn_dropout)
         self.res_attention = res_attention
@@ -611,9 +599,7 @@ class _ScaledDotProductAttention(nn.Module):
         if (
             key_padding_mask is not None
         ):  # mask with shape [bs x q_len] (only when max_w_len == q_len)
-            attn_scores.masked_fill_(
-                key_padding_mask.unsqueeze(1).unsqueeze(2), -np.inf
-            )
+            attn_scores.masked_fill_(key_padding_mask.unsqueeze(1).unsqueeze(2), -np.inf)
 
         # normalize the attention weights
         attn_weights = F.softmax(
@@ -622,9 +608,7 @@ class _ScaledDotProductAttention(nn.Module):
         attn_weights = self.attn_dropout(attn_weights)
 
         # compute the new values given the attention weights
-        output = torch.matmul(
-            attn_weights, v
-        )  # output: [bs x n_heads x max_q_len x d_v]
+        output = torch.matmul(attn_weights, v)  # output: [bs x n_heads x max_q_len x d_v]
 
         if self.res_attention:
             return output, attn_weights, attn_scores

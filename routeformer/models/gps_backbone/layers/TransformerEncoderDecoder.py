@@ -56,9 +56,7 @@ class Encoder(nn.Module):
     def __init__(self, attn_layers, conv_layers=None, norm_layer=None):
         super(Encoder, self).__init__()
         self.attn_layers = nn.ModuleList(attn_layers)
-        self.conv_layers = (
-            nn.ModuleList(conv_layers) if conv_layers is not None else None
-        )
+        self.conv_layers = nn.ModuleList(conv_layers) if conv_layers is not None else None
         self.norm = norm_layer
 
     def forward(self, x, attn_mask=None):
@@ -108,9 +106,7 @@ class DecoderLayer(nn.Module):
         x = x + self.dropout(self.self_attention(x, x, x, attn_mask=x_mask)[0])
         x = self.norm1(x)
 
-        x = x + self.dropout(
-            self.cross_attention(x, cross, cross, attn_mask=cross_mask)[0]
-        )
+        x = x + self.dropout(self.cross_attention(x, cross, cross, attn_mask=cross_mask)[0])
 
         y = x = self.norm2(x)
         y = self.dropout(self.activation(self.conv1(y.transpose(-1, 1))))

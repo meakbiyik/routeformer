@@ -58,8 +58,7 @@ def plot_gps_data_on_map(
         x, y = gps_df["longitude"].values, gps_df["latitude"].values
     else:
         raise ValueError(
-            "gps_df must contain either the columns 'x' and 'y', "
-            "or 'latitude' and 'longitude'"
+            "gps_df must contain either the columns 'x' and 'y', " "or 'latitude' and 'longitude'"
         )
 
     gdf = gpd.GeoDataFrame(

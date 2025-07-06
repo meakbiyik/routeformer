@@ -55,12 +55,12 @@ notebook = "^6.5.4"
 seaborn = "^0.12.2"
 statsmodels = "^0.14.0"
 sympy = "^1.12"
-memray = "^1.9.1"
 py-spy = "^0.3.14"
 wandb = "^0.17.7"
 
 [tool.black]
 target-version = ["py310"]
+line_length = 100
 include = '\.pyi?$'
 exclude = '''
 /(
@@ -88,7 +88,7 @@ exclude = '''
 [tool.isort]
 profile = "black"
 ensure_newline_before_comments = true
-line_length = 88
+line_length = 100
 skip = [
   '.bzr', '.direnv', '.eggs', '.git', '.hg',
   '.mypy_cache', '.nox', '.svn', '.tox', '.venv',

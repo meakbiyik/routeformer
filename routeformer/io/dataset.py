@@ -16,18 +16,7 @@ import tempfile
 import warnings
 from datetime import timezone
 from pathlib import Path
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterator,
-    List,
-    Literal,
-    Optional,
-    Tuple,
-    TypedDict,
-    Union,
-)
+from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Tuple, TypedDict, Union
 
 import av
 import cv2
@@ -399,9 +388,7 @@ class GEMDataset(torch.utils.data.Dataset):
         self.mask_nonfixations = mask_nonfixations
         self.dilution_threshold = dilution_threshold
         self.use_cache = use_cache
-        self.cache_dir = (
-            Path(cache_dir) / "routeformer_dataset" if cache_dir is not None else None
-        )
+        self.cache_dir = Path(cache_dir) / "routeformer_dataset" if cache_dir is not None else None
         self.max_cache_size = max_cache_size
         self.device = device
         self.with_gpu_codec = with_gpu_codec
@@ -411,21 +398,17 @@ class GEMDataset(torch.utils.data.Dataset):
 
         self.output_format = output_format.upper()
         if self.output_format not in ("THWC", "TCHW"):
-            logger.error(
-                f"output_format should be either 'THWC' or 'TCHW', got {output_format}."
-            )
+            logger.error(f"output_format should be either 'THWC' or 'TCHW', got {output_format}.")
             raise ValueError(
                 f"output_format should be either 'THWC' or 'TCHW', got {output_format}."
             )
 
         if self.output_fps not in (1, 2, 3, 5, 10, 15, 30):
             logger.error(
-                "output_fps should be one of 1, 2, 3, 5, 10, 15 or 30, "
-                f"got {output_fps}."
+                "output_fps should be one of 1, 2, 3, 5, 10, 15 or 30, " f"got {output_fps}."
             )
             raise ValueError(
-                "output_fps should be one of 1, 2, 3, 5, 10, 15 or 30, "
-                f"got {output_fps}."
+                "output_fps should be one of 1, 2, 3, 5, 10, 15 or 30, " f"got {output_fps}."
             )
 
         if (
@@ -455,9 +438,7 @@ class GEMDataset(torch.utils.data.Dataset):
         self.target_audio_frame_count = int(self.target_length * self.AUDIO_FPS)
         self.input_gaze_frame_count = int(self.input_length * self.GAZE_FPS)
         self.target_gaze_frame_count = int(self.target_length * self.GAZE_FPS)
-        self.alternative_input_gaze_frame_count = int(
-            self.input_length * self.ALTERNATIVE_GAZE_FPS
-        )
+        self.alternative_input_gaze_frame_count = int(self.input_length * self.ALTERNATIVE_GAZE_FPS)
         self.alternative_target_gaze_frame_count = int(
             self.target_length * self.ALTERNATIVE_GAZE_FPS
         )
@@ -589,9 +570,7 @@ class GEMDataset(torch.utils.data.Dataset):
 
         if not all(len(s) == len(common_subjects) for s in subjects):
             missing_subjects = set.difference(*map(set, subjects))
-            logger.warning(
-                f"Number of subjects not the same across subdirs in {self.root}"
-            )
+            logger.warning(f"Number of subjects not the same across subdirs in {self.root}")
             logger.info(f"Missing subjects: {missing_subjects}")
 
         return sorted(common_subjects)
@@ -621,9 +600,7 @@ class GEMDataset(torch.utils.data.Dataset):
             logger.debug(f"Left: {left_subject}")
             logger.debug(f"Right: {right_subject}")
 
-            left[subject], right[subject] = self._filter_gopro_samples(
-                left_subject, right_subject
-            )
+            left[subject], right[subject] = self._filter_gopro_samples(left_subject, right_subject)
 
             if len(left_subject) != len(right_subject):
                 logger.warning(
@@ -634,9 +611,7 @@ class GEMDataset(torch.utils.data.Dataset):
                 logger.info(f"Right: {right_subject}")
 
             if len(left[subject]) == 0:
-                logger.warning(
-                    f"No matching video files for subject {subject} in 01GoPro"
-                )
+                logger.warning(f"No matching video files for subject {subject} in 01GoPro")
 
         return left, right
 
@@ -706,17 +681,11 @@ class GEMDataset(torch.utils.data.Dataset):
                 / "02EyeTracker"
                 / subject
                 / "world.intrinsics",  # noqa: E501
-                "time": self.root
-                / "02EyeTracker"
-                / subject
-                / "world_timestamps.npy",  # noqa: E501
+                "time": self.root / "02EyeTracker" / subject / "world_timestamps.npy",  # noqa: E501
             }
             gaze[subject] = {
                 "gaze": self.root / "02EyeTracker" / subject / "gaze.pldata",
-                "time": self.root
-                / "02EyeTracker"
-                / subject
-                / "gaze_timestamps.npy",  # noqa: E501
+                "time": self.root / "02EyeTracker" / subject / "gaze_timestamps.npy",  # noqa: E501
             }
 
             # ensure all files exist
@@ -727,10 +696,7 @@ class GEMDataset(torch.utils.data.Dataset):
                         self.root / "02EyeTracker" / subject / "world_001.mp4"
                     )
                     videos[subject]["time"] = (
-                        self.root
-                        / "02EyeTracker"
-                        / subject
-                        / "world_001_timestamps.npy"
+                        self.root / "02EyeTracker" / subject / "world_001_timestamps.npy"
                     )
 
                 if not video.exists():
@@ -757,13 +723,10 @@ class GEMDataset(torch.utils.data.Dataset):
         logger.info(f"Gathering samples in {self.root / '03CorrectedGPS'}")
         samples = {}
         for subject in self.subjects:
-            candidate_samples = sorted(
-                (self.root / "03CorrectedGPS" / subject).glob("*.csv")
-            )
+            candidate_samples = sorted((self.root / "03CorrectedGPS" / subject).glob("*.csv"))
 
             logger.info(
-                f"Found {len(candidate_samples)} candidate samples "
-                f"for subject {subject}"
+                f"Found {len(candidate_samples)} candidate samples " f"for subject {subject}"
             )
 
             samples[subject] = []
@@ -772,18 +735,14 @@ class GEMDataset(torch.utils.data.Dataset):
                 # The prefix of the name in the form GH0x00yz should match
                 # the video name
                 is_left = any(
-                    sample.stem.startswith(left.stem[:8])
-                    for left in self.left_samples[subject]
+                    sample.stem.startswith(left.stem[:8]) for left in self.left_samples[subject]
                 )
                 is_right = any(
-                    sample.stem.startswith(right.stem[:8])
-                    for right in self.right_samples[subject]
+                    sample.stem.startswith(right.stem[:8]) for right in self.right_samples[subject]
                 )
                 if is_left or is_right:
                     samples[subject].append(sample)
-                    logger.info(
-                        f"Found matching sample for subject {subject}: {sample}"
-                    )
+                    logger.info(f"Found matching sample for subject {subject}: {sample}")
                 else:
                     logger.warning(f"Discarding sample for subject {subject}: {sample}")
 
@@ -818,9 +777,7 @@ class GEMDataset(torch.utils.data.Dataset):
             ):
                 video_metadata = self._get_sample_metadata(left, right, gaze_metadata)
                 logger.info(f"Read video metadata for subject {subject}")
-                logger.debug(
-                    f"Metadata for {left}, {right} and {corr_gps}: {video_metadata}"
-                )
+                logger.debug(f"Metadata for {left}, {right} and {corr_gps}: {video_metadata}")
                 info[(left, right, corr_gps)] = video_metadata
 
             subject_infos[subject] = info
@@ -842,9 +799,7 @@ class GEMDataset(torch.utils.data.Dataset):
             file_metadata
             for sample_metadata in self.subject_sample_metadatas.values()
             for file_metadata in sample_metadata.items()
-            if file.samefile(
-                file_metadata[0][2]
-            )  # the key is a tuple of (left, right, corr_gps)
+            if file.samefile(file_metadata[0][2])  # the key is a tuple of (left, right, corr_gps)
         ]
 
         if len(file_metadata) == 0:
@@ -877,13 +832,11 @@ class GEMDataset(torch.utils.data.Dataset):
         is_left = left.stem.startswith(corr_gps.stem[:8])
         if is_left:
             logger.debug(
-                f"Corrected GPS samples from {corr_gps} are from "
-                f"the left video: {left}"
+                f"Corrected GPS samples from {corr_gps} are from " f"the left video: {left}"
             )
         elif right.stem.startswith(corr_gps.stem[:8]):
             logger.debug(
-                f"Corrected GPS samples from {corr_gps} are from "
-                f"the right video: {right}"
+                f"Corrected GPS samples from {corr_gps} are from " f"the right video: {right}"
             )
         else:
             raise ValueError(
@@ -906,9 +859,7 @@ class GEMDataset(torch.utils.data.Dataset):
 
         return gps
 
-    def _interpolate_gps(
-        self, gps: pd.DataFrame, origin_time, duration
-    ) -> pd.DataFrame:
+    def _interpolate_gps(self, gps: pd.DataFrame, origin_time, duration) -> pd.DataFrame:
         """Interpolate GPS samples with PChip interpolation.
 
         Interpolates between 0 and duration seconds.
@@ -950,9 +901,7 @@ class GEMDataset(torch.utils.data.Dataset):
 
         return interpolated_df
 
-    def _get_sample_metadata(
-        self, left: Path, right: Path, gaze_metadata: dict
-    ) -> Dict[str, Any]:
+    def _get_sample_metadata(self, left: Path, right: Path, gaze_metadata: dict) -> Dict[str, Any]:
         """Get metadata for a single sample.
 
         Parameters
@@ -1005,10 +954,7 @@ class GEMDataset(torch.utils.data.Dataset):
             logger.info(f"Left: {left_metadata['duration']}")
             logger.info(f"Right: {right_metadata['duration']}")
 
-        if (
-            self.with_video
-            and right_metadata["video_fps"] != left_metadata["video_fps"]
-        ):
+        if self.with_video and right_metadata["video_fps"] != left_metadata["video_fps"]:
             logger.warning(f"FPS is not the same for videos {left} and {right}")
             logger.info(f"Left: {left_metadata['video_fps']}")
             logger.info(f"Right: {right_metadata['video_fps']}")
@@ -1037,10 +983,7 @@ class GEMDataset(torch.utils.data.Dataset):
         """
         logger.info("Creating indexer...")
         if self.min_pci or self.max_pci:
-            logger.info(
-                f"Filtering samples with pci between {self.min_pci}"
-                f" and {self.max_pci}"
-            )
+            logger.info(f"Filtering samples with pci between {self.min_pci}" f" and {self.max_pci}")
         indexer = {}
 
         index = 0
@@ -1071,12 +1014,8 @@ class GEMDataset(torch.utils.data.Dataset):
                         frequency=self.output_fps,
                         measure="frechet",
                     )
-                    if (
-                        self.min_pci is not None
-                        and pci < self.min_pci
-                    ) or (
-                        self.max_pci is not None
-                        and pci > self.max_pci
+                    if (self.min_pci is not None and pci < self.min_pci) or (
+                        self.max_pci is not None and pci > self.max_pci
                     ):
                         start_time += self.step_size
                         continue
@@ -1187,9 +1126,7 @@ class GEMDataset(torch.utils.data.Dataset):
             self._faulty_samples.add(idx)
             # FIXME: none of the samples should do it, we need to check the
             #  source of this issue. For now, just return another sample
-            logger.warning(
-                f"Sample {idx} is not valid, returning a random sample instead"
-            )
+            logger.warning(f"Sample {idx} is not valid, returning a random sample instead")
             next_idx = self._faulty_sample_replacer.integers(0, len(self))
             del data
             return self.__getitem__(next_idx)
@@ -1324,9 +1261,7 @@ class GEMDataset(torch.utils.data.Dataset):
         bool
             Whether the sample is valid.
         """
-        logger.info(
-            f"Getting data for {subject}, {left}, {right}, {corr_gps}, {start_time}"
-        )
+        logger.info(f"Getting data for {subject}, {left}, {right}, {corr_gps}, {start_time}")
         logger.debug(f"Metadata: {metadata}")
         gaze_metadata = metadata["gaze_metadata"]
         left_offset = metadata["left_offset"]
@@ -1367,18 +1302,14 @@ class GEMDataset(torch.utils.data.Dataset):
         # Ensure that the frame counts are not shorter than expected
         end += 1 / self.VIDEO_FPS
 
-        need_to_read_video = (
-            self.with_video or self.with_audio or not self.use_corrected_gps
-        )
+        need_to_read_video = self.with_video or self.with_audio or not self.use_corrected_gps
 
         if need_to_read_video:
             logger.info(f"Reading video {left} from {start} to {end}")
             left_data = self._read_video(left, start + left_offset, end + left_offset)
 
             logger.info(f"Reading video {right} from {start} to {end}")
-            right_data = self._read_video(
-                right, start + right_offset, end + right_offset
-            )
+            right_data = self._read_video(right, start + right_offset, end + right_offset)
         else:
             left_data = {}
             right_data = {}
@@ -1403,9 +1334,7 @@ class GEMDataset(torch.utils.data.Dataset):
                 left_data["video"] = left_data["video"][
                     :,
                     :,
-                    int(0.3 * left_data["video"].shape[2]) : int(
-                        0.7 * left_data["video"].shape[2]
-                    ),
+                    int(0.3 * left_data["video"].shape[2]) : int(0.7 * left_data["video"].shape[2]),
                 ]
                 logger.info(f"Cropping video {right}")
                 right_data["video"] = right_data["video"][
@@ -1418,9 +1347,7 @@ class GEMDataset(torch.utils.data.Dataset):
 
         start_posix = origin_time + start
         end_posix = origin_time + end
-        data = self._combine_data(
-            left_data, right_data, corr_gps, start_posix, end_posix
-        )
+        data = self._combine_data(left_data, right_data, corr_gps, start_posix, end_posix)
 
         return data, start_posix, end_posix
 
@@ -1433,12 +1360,8 @@ class GEMDataset(torch.utils.data.Dataset):
             if left_video.shape[0] != right_video.shape[0] or (
                 front_video is not None and left_video.shape[0] != front_video.shape[0]
             ):
-                min_len = min(
-                    left_video.shape[0], right_video.shape[0], front_video.shape[0]
-                )
-                logger.warning(
-                    "Video length is not the same for left, right and front videos"
-                )
+                min_len = min(left_video.shape[0], right_video.shape[0], front_video.shape[0])
+                logger.warning("Video length is not the same for left, right and front videos")
                 logger.info(f"Left: {left_video.shape[0]}")
                 logger.info(f"Right: {right_video.shape[0]}")
                 if front_video is not None:
@@ -1464,12 +1387,8 @@ class GEMDataset(torch.utils.data.Dataset):
                 left_audio.shape[0] != right_audio.shape[0]
                 or left_audio.shape[0] != front_audio.shape[0]
             ):
-                min_len = min(
-                    left_audio.shape[0], right_audio.shape[0], front_audio.shape[0]
-                )
-                logger.warning(
-                    "Audio length is not the same for left, right and front audio"
-                )
+                min_len = min(left_audio.shape[0], right_audio.shape[0], front_audio.shape[0])
+                logger.warning("Audio length is not the same for left, right and front audio")
                 logger.info(f"Left: {left_audio.shape[0]}")
                 logger.info(f"Right: {right_audio.shape[0]}")
                 logger.info(f"Front: {front_audio.shape[0]}")
@@ -1483,9 +1402,7 @@ class GEMDataset(torch.utils.data.Dataset):
 
         return data
 
-    def _apply_transforms(
-        self, data: dict[str, torch.Tensor]
-    ) -> dict[str, torch.Tensor]:
+    def _apply_transforms(self, data: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
         """Apply the transforms to the data.
 
         Parameters
@@ -1502,9 +1419,7 @@ class GEMDataset(torch.utils.data.Dataset):
             logger.info("Applying frame transform")
             # torch.stack with list comprehension leads to memory issues
             for frame_idx in range(data["left_video"].shape[0]):
-                data["left_video"][frame_idx] = self.frame_transform(
-                    data["left_video"][frame_idx]
-                )
+                data["left_video"][frame_idx] = self.frame_transform(data["left_video"][frame_idx])
             for frame_idx in range(data["right_video"].shape[0]):
                 data["right_video"][frame_idx] = self.frame_transform(
                     data["right_video"][frame_idx]
@@ -1562,8 +1477,7 @@ class GEMDataset(torch.utils.data.Dataset):
                     int(frames[0].shape[0] * factor),
                 )
                 logger.debug(
-                    f"Scaling {video} by {factor} from {frames[0].shape} "
-                    f"to {target_resolution}"
+                    f"Scaling {video} by {factor} from {frames[0].shape} " f"to {target_resolution}"
                 )
                 if self.num_workers == 1:
                     frames = [
@@ -1632,9 +1546,7 @@ class GEMDataset(torch.utils.data.Dataset):
         """
         for key in data:
             if isinstance(data[key], np.ndarray):
-                logger.debug(
-                    f"Moving {key} with shape {data[key].shape} to {self.device}"
-                )
+                logger.debug(f"Moving {key} with shape {data[key].shape} to {self.device}")
                 data[key] = torch.from_numpy(data[key]).to(self.device)
             else:
                 data[key] = data[key].to(self.device)
@@ -1668,9 +1580,7 @@ class GEMDataset(torch.utils.data.Dataset):
                 "right_video"
             ][frame_idx].unsqueeze(0)
             frame_width = left_frame.shape[3]
-            left_frame = F.pad(
-                left_frame, (0, int(frame_width * 0.9)), mode="constant", value=0
-            )
+            left_frame = F.pad(left_frame, (0, int(frame_width * 0.9)), mode="constant", value=0)
             intermediate_frame, left_right_homography_matrix = self.stitcher(
                 left_frame,
                 right_frame,
@@ -1701,9 +1611,7 @@ class GEMDataset(torch.utils.data.Dataset):
         data["stitched_video"] = output_video
         return data
 
-    def _train_target_split(
-        self, data: dict[str, torch.Tensor], subject: str
-    ) -> Tuple[Item, bool]:
+    def _train_target_split(self, data: dict[str, torch.Tensor], subject: str) -> Tuple[Item, bool]:
         """Split the data into train and target."""
         data_keys = list(data.keys())
         is_sample_ok = True
@@ -1711,9 +1619,7 @@ class GEMDataset(torch.utils.data.Dataset):
             phase_data = {}
             for key in data_keys:
                 logger.debug(f"Slicing {key} for {phase}")
-                input_frame_count, target_frame_count = self._get_frame_counts(
-                    key, subject
-                )
+                input_frame_count, target_frame_count = self._get_frame_counts(key, subject)
                 phase_start = 0 if phase == "train" else input_frame_count
                 phase_end = (
                     input_frame_count
@@ -1738,9 +1644,7 @@ class GEMDataset(torch.utils.data.Dataset):
         # we upsample the gaze data
         if is_sample_ok and subject in ["009", "010"]:
             logger.info(f"Upsampling gaze data for subject {subject}")
-            desired_input_frames, desired_target_frames = self._get_frame_counts(
-                "gaze", "001"
-            )
+            desired_input_frames, desired_target_frames = self._get_frame_counts("gaze", "001")
             for phase, target_frame_count in zip(
                 ["train", "target"], [desired_input_frames, desired_target_frames]
             ):
@@ -1753,9 +1657,7 @@ class GEMDataset(torch.utils.data.Dataset):
 
         return data, is_sample_ok
 
-    def _upsample_gaze_data(
-        self, gaze_data: np.ndarray, target_frame_count: int
-    ) -> np.ndarray:
+    def _upsample_gaze_data(self, gaze_data: np.ndarray, target_frame_count: int) -> np.ndarray:
         """Upsample the gaze data.
 
         Parameters
@@ -1848,20 +1750,15 @@ class GEMDataset(torch.utils.data.Dataset):
 
         if metadata["start_time_gaze"] != player_metadata["start_time_synced_s"]:
             logger.warning(f"Start time for subject {subject} does not match")
+            logger.info(f"Start time from info.invisible.json: {metadata['start_time_gaze']}")
             logger.info(
-                f"Start time from info.invisible.json: {metadata['start_time_gaze']}"
-            )
-            logger.info(
-                "Start time from info.player.json: "
-                f"{player_metadata['start_time_synced_s']}"
+                "Start time from info.player.json: " f"{player_metadata['start_time_synced_s']}"
             )
 
         if metadata["duration"] != player_metadata["duration_s"]:
             logger.warning(f"Duration for subject {subject} does not match")
             logger.info(f"Duration from info.invisible.json: {metadata['duration']}")
-            logger.info(
-                f"Duration from info.player.json: {player_metadata['duration_s']}"
-            )
+            logger.info(f"Duration from info.player.json: {player_metadata['duration_s']}")
 
         # There is a couple seconds difference between the start time of the video
         # and the start time of the gaze data
@@ -1881,12 +1778,10 @@ class GEMDataset(torch.utils.data.Dataset):
             f"subject {subject}: {metadata['start_time']}"
         )
         logger.info(
-            f"Start time for gaze data for subject {subject}: "
-            f"{metadata['start_time_gaze']}"
+            f"Start time for gaze data for subject {subject}: " f"{metadata['start_time_gaze']}"
         )
         logger.info(
-            f"Start time for video for subject {subject}: "
-            f"{metadata['start_time_video']}"
+            f"Start time for video for subject {subject}: " f"{metadata['start_time_video']}"
         )
 
         # Read video intrinsics
@@ -1935,18 +1830,13 @@ class GEMDataset(torch.utils.data.Dataset):
         end_posix += 10 / self.GAZE_FPS
 
         if self.with_gaze:
-            world_video = self._read_world_video(
-                subject, gaze_metadata, start_posix, end_posix
-            )
+            world_video = self._read_world_video(subject, gaze_metadata, start_posix, end_posix)
             logger.info(f"Read world video for subject {subject} from {start_posix} to {end_posix}")
             logger.debug(
-                f"World video for subject {subject} has shape "
-                f"{world_video['video'].shape}"
+                f"World video for subject {subject} has shape " f"{world_video['video'].shape}"
             )
 
-            gaze_data = self._read_gaze_data(
-                subject, gaze_metadata, start_posix, end_posix
-            )
+            gaze_data = self._read_gaze_data(subject, gaze_metadata, start_posix, end_posix)
             logger.info(f"Read gaze data for subject {subject}")
             logger.debug(f"Gaze data for subject {subject} has shape {gaze_data.shape}")
         else:
@@ -1960,8 +1850,7 @@ class GEMDataset(torch.utils.data.Dataset):
 
         if "video" in world_video:
             logger.debug(
-                f"World video for subject {subject} "
-                f"has shape {world_video['video'].shape}"
+                f"World video for subject {subject} " f"has shape {world_video['video'].shape}"
             )
             data["front_video"] = world_video["video"]
 
@@ -1993,9 +1882,7 @@ class GEMDataset(torch.utils.data.Dataset):
         """
         gaze_paths = self.gaze_samples[subject]
         if gaze_paths["gaze"] in self.gaze_data_cache:
-            gaze_pos, gaze_timestamps, is_fixation = self.gaze_data_cache[
-                gaze_paths["gaze"]
-            ]
+            gaze_pos, gaze_timestamps, is_fixation = self.gaze_data_cache[gaze_paths["gaze"]]
         else:
             gaze_data = load_pldata_file(gaze_paths["gaze"].parent, "gaze")
             gaze_data = [data for data in gaze_data.data if data["topic"] == "gaze.pi"]
@@ -2028,9 +1915,7 @@ class GEMDataset(torch.utils.data.Dataset):
         is_fixation = is_fixation[filt]
 
         if len(gaze_pos) == 0:
-            logger.warning(
-                f"No gaze data for subject {subject} in the given time interval"
-            )
+            logger.warning(f"No gaze data for subject {subject} in the given time interval")
             return np.empty((0, 2), dtype=np.float32)
 
         if self.undistort_videos:
@@ -2183,17 +2068,10 @@ class GEMDataset(torch.utils.data.Dataset):
             # the gps data
             full_gps = np.concatenate([left_gps, right_gps], axis=0)
             if full_gps.shape[0] > 0:
-                interp_gps = self._smoothly_interpolate_gps(
-                    full_gps, gps_start, gps_end
-                )
+                interp_gps = self._smoothly_interpolate_gps(full_gps, gps_start, gps_end)
 
-                if (
-                    self.with_video
-                    and interp_gps.shape[0] != data["left_video"].shape[0]
-                ):
-                    logger.warning(
-                        "Interpolated GPS length is not the same with video length"
-                    )
+                if self.with_video and interp_gps.shape[0] != data["left_video"].shape[0]:
+                    logger.warning("Interpolated GPS length is not the same with video length")
                     logger.info(f"GPS: {interp_gps.shape[0]}")
                     logger.info(f"Video: {data['left_video'].shape[0]}")
 
@@ -2368,7 +2246,7 @@ class GEMDataset(torch.utils.data.Dataset):
             container.streams.video[0].thread_count = 0
             ctx = None
             if self.with_gpu_codec:
-                ctx = av.Codec('h264_cuvid', 'r').create()
+                ctx = av.Codec("h264_cuvid", "r").create()
                 ctx.extradata = container.streams.video[0].codec_context.extradata
             video_frames = self._read_from_stream(
                 container,
@@ -2403,9 +2281,7 @@ class GEMDataset(torch.utils.data.Dataset):
 
             # read data stream directly, do not rely on the _read_from_stream
             # function because it does not support data streams
-            raw_gps_data = self._read_data_track(
-                gps_stream_id, str(file), start_sec, end_sec
-            )
+            raw_gps_data = self._read_data_track(gps_stream_id, str(file), start_sec, end_sec)
             gps_data_objects = gpmf.parseStream(raw_gps_data)
             gps_points, dilutions = self._build_gps_points(gps_data_objects)
             gps_frames = [
@@ -2436,7 +2312,6 @@ class GEMDataset(torch.utils.data.Dataset):
         logger.info(f"Read video and closed streams for {file} from {start_sec} to {end_sec}")
 
         return video_frames, audio_frames, gps_frames
-
 
     def _read_from_stream(
         self,
@@ -2583,26 +2458,20 @@ class GEMDataset(torch.utils.data.Dataset):
             elif d.fourCC == "GPSF":
                 logger.debug(f"GPSF: {d.data}")
                 if d.data != GPSFIX:
-                    logger.info(
-                        f"GPSFIX change to {d.data} ({fourCC.LabelGPSF.xlate[d.data]})"
-                    )
+                    logger.info(f"GPSFIX change to {d.data} ({fourCC.LabelGPSF.xlate[d.data]})")
                 GPSFIX = d.data
             elif d.fourCC == "GPSP":
                 logger.info(f"Dilution of precision (GPSP) change to {d.data}")
                 GPSP = d.data
             elif d.fourCC == "GPS5":
-                new_points, new_dilutions = self._parse_gps5_stream(
-                    d, SCAL, GPSU, GPSP, GPSFIX
-                )
+                new_points, new_dilutions = self._parse_gps5_stream(d, SCAL, GPSU, GPSP, GPSFIX)
                 points.extend(new_points)
                 dilutions.extend(new_dilutions)
 
         logger.debug(f"Parsed GPS data point count: {len(points)}")
         points = self._fix_timestamps(points)
         # Remove points with dilution of precision > threshold
-        filtered_points, filtered_dilutions = self._filter_points_by_dilution(
-            points, dilutions
-        )
+        filtered_points, filtered_dilutions = self._filter_points_by_dilution(points, dilutions)
 
         logger.info(f"GPS data points: {len(points)} (OK: {len(filtered_points)})")
 
@@ -2616,14 +2485,10 @@ class GEMDataset(torch.utils.data.Dataset):
                 logger.warning("Empty GPS data point, skipping")
                 continue
 
-            retdata = [
-                float(x) / float(y) for x, y in zip(item._asdict().values(), list(SCAL))
-            ]
+            retdata = [float(x) / float(y) for x, y in zip(item._asdict().values(), list(SCAL))]
 
             gpsdata = fourCC.GPSData._make(retdata)
-            p = gpshelper.GPSPoint(
-                gpsdata.lat, gpsdata.lon, gpsdata.alt, GPSU, gpsdata.speed
-            )
+            p = gpshelper.GPSPoint(gpsdata.lat, gpsdata.lon, gpsdata.alt, GPSU, gpsdata.speed)
             # GPSU is the timestamp of the first point in GPS5
             # We fill the rest via _fix_timestamps function
             GPSU = None
@@ -2667,9 +2532,9 @@ class GEMDataset(torch.utils.data.Dataset):
                 last_valid_ts_idx = ts_idx
             else:
                 if last_valid_ts_idx is not None:
-                    timestamps[ts_idx] = timestamps[
-                        last_valid_ts_idx
-                    ] + datetime.timedelta(seconds=(ts_idx - last_valid_ts_idx) / fps)
+                    timestamps[ts_idx] = timestamps[last_valid_ts_idx] + datetime.timedelta(
+                        seconds=(ts_idx - last_valid_ts_idx) / fps
+                    )
 
         # Fill the initial missing timestamps, if any
         # by counting backwards from the first valid timestamp
@@ -2712,11 +2577,7 @@ class GEMDataset(torch.utils.data.Dataset):
                         estimated_fps = np.nan
                     else:
                         estimated_fps = datapoint_count / total_seconds
-                    if (
-                        estimated_fps > 18.5
-                        or estimated_fps < 17.5
-                        or np.isnan(estimated_fps)
-                    ):
+                    if estimated_fps > 18.5 or estimated_fps < 17.5 or np.isnan(estimated_fps):
                         # remove the invalid timestamps
                         # As we know that the frame rate is somewhat stable
                         # in a single camera run, if it varies too much
@@ -2780,12 +2641,8 @@ class GEMDataset(torch.utils.data.Dataset):
             Path to the video file.
         """
         # Convert seconds to ffmpeg time format (HH:MM:SS.sss)
-        start_time = (
-            str(datetime.timedelta(seconds=start_sec)) if start_sec > 0 else None
-        )
-        end_time = (
-            str(datetime.timedelta(seconds=end_sec)) if end_sec < float("inf") else None
-        )
+        start_time = str(datetime.timedelta(seconds=start_sec)) if start_sec > 0 else None
+        end_time = str(datetime.timedelta(seconds=end_sec)) if end_sec < float("inf") else None
 
         args = []
         if start_time:
@@ -2806,9 +2663,7 @@ class GEMDataset(torch.utils.data.Dataset):
         ]
 
         cmd = self._ffmpeg_cmd()
-        result = subprocess.run(
-            [cmd] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
+        result = subprocess.run([cmd] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         if result.returncode != 0:
             logger.error(f"ffmpeg stderr: {result.stderr.decode('utf-8')}")

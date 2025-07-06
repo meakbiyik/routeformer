@@ -50,7 +50,5 @@ def get_model(network, num_classes, criterion, has_edge=False):
     if not has_edge:
         net = net_func(num_classes=num_classes, criterion=criterion)
     else:
-        net = net_func(
-            num_classes=num_classes, criterion=criterion, has_edge_head=has_edge
-        )
+        net = net_func(num_classes=num_classes, criterion=criterion, has_edge_head=has_edge)
     return net

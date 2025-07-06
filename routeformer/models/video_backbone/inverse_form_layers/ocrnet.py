@@ -62,9 +62,7 @@ class OCR_block(nn.Module):
         num_classes = cfg.DATASET.NUM_CLASSES
 
         self.conv3x3_ocr = nn.Sequential(
-            nn.Conv2d(
-                high_level_ch, ocr_mid_channels, kernel_size=3, stride=1, padding=1
-            ),
+            nn.Conv2d(high_level_ch, ocr_mid_channels, kernel_size=3, stride=1, padding=1),
             BNReLU(ocr_mid_channels),
         )
         self.ocr_gather_head = SpatialGather_Module(num_aux_classes)
@@ -176,9 +174,7 @@ class OCRNet(nn.Module):
     OCR net
     """
 
-    def __init__(
-        self, num_classes, trunk="hrnetv2", criterion=None, has_edge_head=False
-    ):
+    def __init__(self, num_classes, trunk="hrnetv2", criterion=None, has_edge_head=False):
         super(OCRNet, self).__init__()
         self.has_edge_head = has_edge_head
         self.criterion = criterion
@@ -218,9 +214,7 @@ class OCRNet(nn.Module):
             # main_loss = self.criterion(cls_out, gts, do_rmi=True)
             if self.has_edge_head:
                 edge_gts = inputs["edge"]
-                main_loss = self.criterion(
-                    (cls_out, edge_output), (gts, edge_gts), do_rmi=True
-                )
+                main_loss = self.criterion((cls_out, edge_output), (gts, edge_gts), do_rmi=True)
                 aux_loss = self.criterion(
                     (aux_out, edge_output_aux),
                     (gts, edge_gts),
@@ -246,9 +240,7 @@ class OnlyHRNet(nn.Module):
     OnlyHRNet
     """
 
-    def __init__(
-        self, num_classes, trunk="hrnetv2", criterion=None, has_edge_head=False
-    ):
+    def __init__(self, num_classes, trunk="hrnetv2", criterion=None, has_edge_head=False):
         super(OnlyHRNet, self).__init__()
         self.criterion = criterion
         self.backbone = hrnetv2.get_seg_model()
@@ -294,9 +286,7 @@ class OnlyHRNet(nn.Module):
             # main_loss = self.criterion(cls_out, gts, do_rmi=True)
             if self.has_edge_head:
                 edge_gts = inputs["edge"]
-                main_loss = self.criterion(
-                    (cls_out, edge_output), (gts, edge_gts), do_rmi=True
-                )
+                main_loss = self.criterion((cls_out, edge_output), (gts, edge_gts), do_rmi=True)
                 aux_loss = self.criterion(
                     (aux_out, edge_output_aux),
                     (gts, edge_gts),
@@ -322,9 +312,7 @@ class MscaleOCR(nn.Module):
     OCR net
     """
 
-    def __init__(
-        self, num_classes, trunk="hrnetv2", criterion=None, has_edge_head=False
-    ):
+    def __init__(self, num_classes, trunk="hrnetv2", criterion=None, has_edge_head=False):
         super(MscaleOCR, self).__init__()
         self.criterion = criterion
         self.backbone, _, _, high_level_ch = get_trunk(trunk)
@@ -436,9 +424,7 @@ class MscaleOCR(nn.Module):
         if self.training:
             assert "gts" in inputs
             gts = inputs["gts"]
-            loss = cfg.LOSS.OCR_ALPHA * self.criterion(aux, gts) + self.criterion(
-                pred, gts
-            )
+            loss = cfg.LOSS.OCR_ALPHA * self.criterion(aux, gts) + self.criterion(pred, gts)
             return loss
         else:
             output_dict["pred"] = pred
@@ -554,28 +540,20 @@ class MscaleOCR(nn.Module):
             gts = inputs["gts"]
             edge_gts = inputs["edge"]
             do_rmi = cfg.LOSS.OCR_AUX_RMI
-            aux_loss = self.criterion(
-                (joint_aux, edge_05x), (gts, edge_gts), do_rmi=do_rmi
-            )
+            aux_loss = self.criterion((joint_aux, edge_05x), (gts, edge_gts), do_rmi=do_rmi)
 
             # Optionally turn off RMI loss for first epoch to try to work
             # around cholesky errors of singular matrix
             do_rmi_main = True  # cfg.EPOCH > 0
-            main_loss = self.criterion(
-                (joint_pred, edge_1x), (gts, edge_gts), do_rmi=do_rmi_main
-            )
+            main_loss = self.criterion((joint_pred, edge_1x), (gts, edge_gts), do_rmi=do_rmi_main)
             loss = cfg.LOSS.OCR_ALPHA * aux_loss + main_loss
 
             # Optionally, apply supervision to the multi-scale predictions
             # directly. Turn off RMI to keep things lightweight
             if cfg.LOSS.SUPERVISED_MSCALE_WT:
                 scaled_pred_05x = scale_as(pred_05x, p_1x)
-                loss_lo = self.criterion(
-                    (scaled_pred_05x, edge_05x), (gts, edge_gts), do_rmi=False
-                )
-                loss_hi = self.criterion(
-                    (pred_10x, edge_1x), (gts, edge_gts), do_rmi=False
-                )
+                loss_lo = self.criterion((scaled_pred_05x, edge_05x), (gts, edge_gts), do_rmi=False)
+                loss_hi = self.criterion((pred_10x, edge_1x), (gts, edge_gts), do_rmi=False)
                 loss += cfg.LOSS.SUPERVISED_MSCALE_WT * loss_lo
                 loss += cfg.LOSS.SUPERVISED_MSCALE_WT * loss_hi
             return loss
@@ -600,18 +578,12 @@ class MscaleOCR(nn.Module):
 
 
 def HRNet(num_classes, criterion, has_edge_head=False):
-    return OCRNet(
-        num_classes, trunk="hrnetv2", criterion=criterion, has_edge_head=has_edge_head
-    )
+    return OCRNet(num_classes, trunk="hrnetv2", criterion=criterion, has_edge_head=has_edge_head)
 
 
 def AuxHRNet(num_classes, criterion, has_edge_head=False):
-    return OnlyHRNet(
-        num_classes, trunk="hrnetv2", criterion=criterion, has_edge_head=has_edge_head
-    )
+    return OnlyHRNet(num_classes, trunk="hrnetv2", criterion=criterion, has_edge_head=has_edge_head)
 
 
 def HRNet_Mscale(num_classes, criterion, has_edge_head=False):
-    return MscaleOCR(
-        num_classes, trunk="hrnetv2", criterion=criterion, has_edge_head=has_edge_head
-    )
+    return MscaleOCR(num_classes, trunk="hrnetv2", criterion=criterion, has_edge_head=has_edge_head)

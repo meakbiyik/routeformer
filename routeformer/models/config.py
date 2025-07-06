@@ -79,16 +79,14 @@ class RouteformerConfig(BaseConfig):
 
     # Rebuttal params
     _only_motion: bool = False
-    
+
     def __post_init__(self, **kwargs):
         """Initialize RouteformerConfig."""
         # Ensure that the video fps is a divisor of the output fps
         assert (
             self.output_fps % self.video_fps == 0
         ), "Video FPS must be a divisor of the output FPS"
-        assert (
-            self.output_fps % self.gaze_fps == 0
-        ), "Gaze FPS must be a divisor of the output FPS"
+        assert self.output_fps % self.gaze_fps == 0, "Gaze FPS must be a divisor of the output FPS"
         self.with_video = (
             self.with_video
             if self.with_video is not None

@@ -49,7 +49,7 @@ class GPSBackboneConfig(BaseConfig):
         if not self.dense_prediction:
             return out
 
-        return self.enc_in - 3 # angle, norm (speed), acceleration
+        return self.enc_in - 3  # angle, norm (speed), acceleration
 
     @property
     def enc_in(self) -> int:
@@ -57,7 +57,7 @@ class GPSBackboneConfig(BaseConfig):
         if self._enc_in is not None:
             return self._enc_in
 
-        out = 2 + 3 # coords, plus angle, norm (speed), acceleration
+        out = 2 + 3  # coords, plus angle, norm (speed), acceleration
 
         if not self.with_video:
             # We do not need to encode the GPS if we do not have video

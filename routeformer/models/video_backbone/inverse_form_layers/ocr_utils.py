@@ -169,9 +169,7 @@ class SpatialOCR_Module(nn.Module):
 
     def __init__(self, in_channels, key_channels, out_channels, scale=1, dropout=0.1):
         super(SpatialOCR_Module, self).__init__()
-        self.object_context_block = ObjectAttentionBlock(
-            in_channels, key_channels, scale
-        )
+        self.object_context_block = ObjectAttentionBlock(in_channels, key_channels, scale)
         if cfg.MODEL.OCR_ASPP:
             self.aspp, aspp_out_ch = get_aspp(
                 in_channels, bottleneck_ch=cfg.MODEL.ASPP_BOT_CH, output_stride=8

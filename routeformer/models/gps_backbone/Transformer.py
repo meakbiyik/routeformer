@@ -6,12 +6,8 @@ import torch.nn as nn
 from .config import GPSBackboneConfig
 from .layers.Embedding import DataEmbedding
 from .layers.SelfAttentionFamily import AttentionLayer, FullAttention
-from .layers.TransformerEncoderDecoder import (
-    Decoder,
-    DecoderLayer,
-    Encoder,
-    EncoderLayer,
-)
+from .layers.TransformerEncoderDecoder import Decoder, DecoderLayer, Encoder, EncoderLayer
+
 
 class Transformer(L.LightningModule):
     """Vanilla Transformer with O(L^2) complexity."""
@@ -128,9 +124,7 @@ class Transformer(L.LightningModule):
             dim=1,
         )
         x_mark_dec = (
-            torch.arange(
-                x_enc.shape[1] + self.pred_len, device=x_enc.device, dtype=torch.float32
-            )
+            torch.arange(x_enc.shape[1] + self.pred_len, device=x_enc.device, dtype=torch.float32)
             .repeat(x_dec.shape[0])
             .view(x_dec.shape[0], -1, 1)
         )

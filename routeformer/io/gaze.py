@@ -98,9 +98,7 @@ def detect_fixations(  # noqa: C901
     gaze_data = [(idx, datum) for idx, datum in enumerate(gaze_data)]
     is_fixation = np.zeros(len(gaze_data), dtype=bool)
     filtered_gaze_data = [
-        (idx, datum)
-        for idx, datum in gaze_data
-        if datum["confidence"] > min_data_confidence
+        (idx, datum) for idx, datum in gaze_data if datum["confidence"] > min_data_confidence
     ]
     if not filtered_gaze_data:
         logger.warning("No data available to find fixations")
@@ -116,8 +114,7 @@ def detect_fixations(  # noqa: C901
         # check if working_queue contains enough data
         if (
             len(working_queue) < 2
-            or (working_queue[-1][1]["timestamp"] - working_queue[0][1]["timestamp"])
-            < min_duration
+            or (working_queue[-1][1]["timestamp"] - working_queue[0][1]["timestamp"]) < min_duration
         ):
             idx_datum_tuple = remaining_gaze.popleft()
             working_queue.append(idx_datum_tuple)
@@ -174,9 +171,7 @@ def detect_fixations(  # noqa: C901
         working_queue.clear()  # clear queue
         remaining_gaze.extendleft(reversed(to_be_placed_back))
 
-    logger.info(
-        f"Found {is_fixation.sum()} fixations out of {len(is_fixation)} samples"
-    )
+    logger.info(f"Found {is_fixation.sum()} fixations out of {len(is_fixation)} samples")
 
     return is_fixation
 
@@ -335,9 +330,7 @@ class Radial_Dist_Camera(Camera_Model):
         else:
             _D = np.asarray([[0.0, 0.0, 0.0, 0.0, 0.0]])
 
-        image_points, jacobian = cv2.projectPoints(
-            object_points, rvec, tvec, self.K, _D
-        )
+        image_points, jacobian = cv2.projectPoints(object_points, rvec, tvec, self.K, _D)
 
         if input_dim == 2:
             image_points.shape = (-1, 2)

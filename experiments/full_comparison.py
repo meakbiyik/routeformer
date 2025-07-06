@@ -14,8 +14,8 @@ import lightning as L
 import numpy as np
 import torch
 import torch.optim as optim
-from gimo.adapted_gimo import AdaptedGIMO
 from autobots.autobots import AutoBotAdapted
+from gimo.adapted_gimo import AdaptedGIMO
 from lightning.pytorch.callbacks import ModelCheckpoint
 from lightning.pytorch.loggers import WandbLogger
 from lightning.pytorch.strategies import DDPStrategy
@@ -104,7 +104,9 @@ if DATASET == "DREYEVE":
     PCI_SPLIT_N_SAMPLES_PER_BIN = int(
         os.getenv("PCI_SPLIT_N_SAMPLES_PER_BIN", 200)
     )  # Will prepare for pci balanced split
-    GOPRO_SCALING_FACTOR = 0.4  # from 1.0, (1920, 1080) -> (768, 432), but we split it into two -> (384, 432)  # noqa
+    GOPRO_SCALING_FACTOR = (
+        0.4  # from 1.0, (1920, 1080) -> (768, 432), but we split it into two -> (384, 432)  # noqa
+    )
     FRONT_SCALING_FACTOR = 1 / 3.0  # from 1.0, (960, 720) -> (320, 240)
     DATASET_DIR = Path(os.getenv("DREYEVE_DATASET_DIR"))
     DATASET_CACHE_DIR = Path(os.getenv("DREYEVE_DATASET_CACHE_DIR"))
@@ -230,7 +232,8 @@ class ParallelTrainer(L.LightningModule):
         + "a"
         if DATASET == "DREYEVE"
         else "",  # noqa
-        torchcache_max_memory_cache_size=100e9 // DEVICE_COUNT,  # This is enough for SwinV2 base, for float16 cache dtype # noqa
+        torchcache_max_memory_cache_size=100e9
+        // DEVICE_COUNT,  # This is enough for SwinV2 base, for float16 cache dtype # noqa
         train_backbone=False,
         backbone_minibatch_size=32,
         cache_dir=str(TORCHCACHE_CACHE_DIR),
@@ -242,12 +245,14 @@ class ParallelTrainer(L.LightningModule):
     DINOV2_BACKBONE_CONFIG = SWINV2_BACKBONE_CONFIG.override(
         model_type="vit_base_patch14_dinov2.lvd142m",
         torchcache_persistent_module_hash="1d9cd461e0d50406283c6645639e6dbb4d4cb804430d759d88fe1fdb58ae889a",  # noqa
-        torchcache_max_memory_cache_size=14e9 // DEVICE_COUNT,  # we actually need 128GB for DinoV2 for float16 cache dtype, but we have limited RAM # noqa
+        torchcache_max_memory_cache_size=14e9
+        // DEVICE_COUNT,  # we actually need 128GB for DinoV2 for float16 cache dtype, but we have limited RAM # noqa
     )
     SAM_BACKBONE_CONFIG = SWINV2_BACKBONE_CONFIG.override(
         model_type="samvit_base_patch16.sa1b",
         torchcache_persistent_module_hash="7dab742e83a23ddf2e4b52302c09bd8d67354341f4e4e5eda5a10006e8b08ba7",  # noqa
-        torchcache_max_memory_cache_size=14e9 // DEVICE_COUNT,  # we actually need 64GB for SAM for float16 cache dtype, but we have limited RAM # noqa
+        torchcache_max_memory_cache_size=14e9
+        // DEVICE_COUNT,  # we actually need 64GB for SAM for float16 cache dtype, but we have limited RAM # noqa
     )
     INVFORM_BACKBONE_CONFIG = InverseFormBackboneConfig(
         train_backbone=False,
@@ -296,7 +301,6 @@ class ParallelTrainer(L.LightningModule):
         with_gaze=True,
     )
 
-    
     ROUTEFORMER_CONFIG_AUTOREG = ROUTEFORMER_CONFIG.override(
         autoregressive=True,
     )
@@ -340,7 +344,7 @@ class ParallelTrainer(L.LightningModule):
             video_backbone=SwinV2,
             configs=self.ROUTEFORMER_CONFIG_SWINV2_GAZE_AUTOREG.override(
                 autoregressive_step_size=int(4 * OUTPUT_FPS),
-            )
+            ),
         )
 
         self.Routeformer_with_video_with_gaze_swinv2_wout_scene = Routeformer(
@@ -411,7 +415,6 @@ class ParallelTrainer(L.LightningModule):
         #     video_backbone=InverseForm,
         #     configs=self.ROUTEFORMER_CONFIG_INVFORM,
         # )
-
 
         self.AutoBotEgo = AutoBotAdapted(
             configs=self.ROUTEFORMER_CONFIG,
@@ -494,20 +497,28 @@ class ParallelTrainer(L.LightningModule):
         )
 
         self.trajectory_loss = FutureDiscountedLoss(
-            self.ROUTEFORMER_CONFIG.discount_factor, self.ROUTEFORMER_CONFIG.epsilon, loss_function="smooth_l1"
+            self.ROUTEFORMER_CONFIG.discount_factor,
+            self.ROUTEFORMER_CONFIG.epsilon,
+            loss_function="smooth_l1",
         )
         self.dense_loss = FutureDiscountedLoss(
-            self.ROUTEFORMER_CONFIG.discount_factor, self.ROUTEFORMER_CONFIG.visual_epsilon, loss_function="smooth_l1"
+            self.ROUTEFORMER_CONFIG.discount_factor,
+            self.ROUTEFORMER_CONFIG.visual_epsilon,
+            loss_function="smooth_l1",
         )
         # # GIMO uses L1 loss
         # self.gimo_loss = torch.nn.L1Loss()
         # self.multimodal_transformer_loss = torch.nn.MSELoss()
 
         self.gimo_loss = FutureDiscountedLoss(
-            self.ROUTEFORMER_CONFIG.discount_factor, self.ROUTEFORMER_CONFIG.epsilon, loss_function="smooth_l1"
+            self.ROUTEFORMER_CONFIG.discount_factor,
+            self.ROUTEFORMER_CONFIG.epsilon,
+            loss_function="smooth_l1",
         )
         self.multimodal_transformer_loss = FutureDiscountedLoss(
-            self.ROUTEFORMER_CONFIG.discount_factor, self.ROUTEFORMER_CONFIG.epsilon, loss_function="smooth_l1"
+            self.ROUTEFORMER_CONFIG.discount_factor,
+            self.ROUTEFORMER_CONFIG.epsilon,
+            loss_function="smooth_l1",
         )
 
     def training_step(self, batch: Item, batch_idx):
@@ -523,29 +534,25 @@ class ParallelTrainer(L.LightningModule):
                 if model.configs.dense_prediction:
                     future_gps, future_visual_features = model(input)
                     _, target_visual_features = model.preprocess_batch(target, training=False)
-                    target_visual_features = target_visual_features[:, : future_visual_features.shape[1]]
+                    target_visual_features = target_visual_features[
+                        :, : future_visual_features.shape[1]
+                    ]
                     autoreg_step_size = model.configs.autoregressive_step_size
                     if model.configs.autoregressive:
-                        future_gps = future_gps[:, : autoreg_step_size]
-                        target_gps = target_gps[:, : autoreg_step_size]
-                    trajectory_loss = self.trajectory_loss(
-                        future_gps, target_gps
-                    )
+                        future_gps = future_gps[:, :autoreg_step_size]
+                        target_gps = target_gps[:, :autoreg_step_size]
+                    trajectory_loss = self.trajectory_loss(future_gps, target_gps)
                     if model.configs.autoregressive:
-                        trajectory_loss = trajectory_loss * (model.configs.gps_backbone_config.pred_len / autoreg_step_size)
+                        trajectory_loss = trajectory_loss * (
+                            model.configs.gps_backbone_config.pred_len / autoreg_step_size
+                        )
                     target_visual_features = target_visual_features.detach()
                     if model.configs.autoregressive:
-                        future_visual_features = future_visual_features[
-                            :, : autoreg_step_size
-                        ]
-                        target_visual_features = target_visual_features[:, : autoreg_step_size]
-                    dense_loss = self.dense_loss(
-                        future_visual_features, target_visual_features
-                    )
+                        future_visual_features = future_visual_features[:, :autoreg_step_size]
+                        target_visual_features = target_visual_features[:, :autoreg_step_size]
+                    dense_loss = self.dense_loss(future_visual_features, target_visual_features)
                     dense_loss_weight = (
-                        model.configs.dense_loss_ratio
-                        * trajectory_loss
-                        / max(dense_loss, 1e-6)
+                        model.configs.dense_loss_ratio * trajectory_loss / max(dense_loss, 1e-6)
                     ).detach()
                     # Activate dense loss after 10 epochs
                     if self.current_epoch < 10:
@@ -558,13 +565,9 @@ class ParallelTrainer(L.LightningModule):
                     if "gimo" in model_name.lower():
                         trajectory_loss = self.gimo_loss(future_gps, target_gps)
                     elif "multimodal" in model_name.lower():
-                        trajectory_loss = self.multimodal_transformer_loss(
-                            future_gps, target_gps
-                        )
+                        trajectory_loss = self.multimodal_transformer_loss(future_gps, target_gps)
                     else:
-                        trajectory_loss = self.trajectory_loss(
-                            future_gps, target_gps
-                        )
+                        trajectory_loss = self.trajectory_loss(future_gps, target_gps)
                     loss = trajectory_loss
                 total_loss += loss
                 metrics[f"train_loss_{model_name}"] = trajectory_loss
@@ -611,9 +614,7 @@ class ParallelTrainer(L.LightningModule):
         self.maybe_split_video(batch)
         return self._eval_and_log(batch, "test")
 
-    def report_split(
-        self, prefix, metrics, buckets, losses, ades, fdes, irrs, final_suffix
-    ):
+    def report_split(self, prefix, metrics, buckets, losses, ades, fdes, irrs, final_suffix):
         """Report metrics for a given set of pci buckets."""
         avg_losses = []
         avg_ades = []
@@ -684,9 +685,7 @@ class ParallelTrainer(L.LightningModule):
                 "75-95%": (irrs > IRR_QUARTILES["75%"]) & (irrs < IRR_QUARTILES["95%"]),
                 ">95%": irrs >= IRR_QUARTILES["95%"],
             }
-            self.report_split(
-                prefix, metrics, buckets, losses, ades, fdes, irrs, "avg%"
-            )
+            self.report_split(prefix, metrics, buckets, losses, ades, fdes, irrs, "avg%")
 
             irr_buckets = {
                 "<20i": irrs < 20,
@@ -696,9 +695,7 @@ class ParallelTrainer(L.LightningModule):
                 ">80i": irrs >= 80,
             }
 
-            self.report_split(
-                prefix, metrics, irr_buckets, losses, ades, fdes, irrs, "avgi"
-            )
+            self.report_split(prefix, metrics, irr_buckets, losses, ades, fdes, irrs, "avgi")
         self.log_dict(
             metrics,
             on_step=False,
@@ -738,9 +735,14 @@ class ParallelTrainer(L.LightningModule):
     def configure_optimizers(self):
         """Configure the optimizer and scheduler."""
         video_backbone_params = []
-        if self.ROUTEFORMER_CONFIG.video_backbone_config and self.ROUTEFORMER_CONFIG.video_backbone_config.train_backbone:
-            video_backbone_params = [p for name, p in self.named_parameters() if 'video_backbone' in name]
-        others = [p for name, p in self.named_parameters() if 'video_backbone' not in name]
+        if (
+            self.ROUTEFORMER_CONFIG.video_backbone_config
+            and self.ROUTEFORMER_CONFIG.video_backbone_config.train_backbone
+        ):
+            video_backbone_params = [
+                p for name, p in self.named_parameters() if "video_backbone" in name
+            ]
+        others = [p for name, p in self.named_parameters() if "video_backbone" not in name]
         # see https://github.com/clovaai/AdamP/issues/10#issuecomment-861208964
         # optimizer = optim.AdamW(self.parameters(), lr=5e-4, weight_decay=1e-1)
         OptClass = getattr(optim, self.ROUTEFORMER_CONFIG.optimizer)
@@ -764,7 +766,7 @@ class ParallelTrainer(L.LightningModule):
 
 
 if __name__ == "__main__":
-    torch.multiprocessing.set_start_method('spawn', force=True)
+    torch.multiprocessing.set_start_method("spawn", force=True)
     dataloaders = {}
     splits = ["train+val", "test"]
     for split in splits:
@@ -781,11 +783,11 @@ if __name__ == "__main__":
                 front_scaling_factor=FRONT_SCALING_FACTOR,
                 use_cache=USE_DATASET_CACHE,
                 use_memory_cache=USE_MEMORY_CACHE,
-                max_memory_cache_size=TRAIN_MEMORY_CACHE_SIZE if split.startswith("train") else VAL_MEMORY_CACHE_SIZE,
-                cache_dir=DATASET_CACHE_DIR,
-                enable_pci_split=ENABLE_PCI_SPLIT
+                max_memory_cache_size=TRAIN_MEMORY_CACHE_SIZE
                 if split.startswith("train")
-                else False,
+                else VAL_MEMORY_CACHE_SIZE,
+                cache_dir=DATASET_CACHE_DIR,
+                enable_pci_split=ENABLE_PCI_SPLIT if split.startswith("train") else False,
                 pci_split_n_samples_per_bin=PCI_SPLIT_N_SAMPLES_PER_BIN,  # noqa
                 max_cache_size=200e9,
             )
@@ -815,7 +817,9 @@ if __name__ == "__main__":
             batch_size=BATCH_SIZE,
             shuffle=split.startswith("train") and not ENABLE_PCI_SPLIT,
             pin_memory=True,
-            num_workers=NUM_WORKERS // DEVICE_COUNT if split.startswith("train") else max(NUM_WORKERS // DEVICE_COUNT // VAL_WORKER_RATIO, 1),
+            num_workers=NUM_WORKERS // DEVICE_COUNT
+            if split.startswith("train")
+            else max(NUM_WORKERS // DEVICE_COUNT // VAL_WORKER_RATIO, 1),
             persistent_workers=NUM_WORKERS > 0,
         )
 
@@ -837,14 +841,18 @@ if __name__ == "__main__":
             "PREDICT_FROM_LINEAR": PREDICT_FROM_LINEAR,
             "LIMIT_TRAIN_BATCHES": LIMIT_TRAIN_BATCHES,
         },
-        save_dir=LOGS_DIR, 
+        save_dir=LOGS_DIR,
     )
 
     parallel_trainer = ParallelTrainer()
     strategy = DDPStrategy(find_unused_parameters=True, process_group_backend="nccl")
     checkpoints = []
     for model_name, model in parallel_trainer.models.items():
-        if "baseline" in model_name or "Routeformer_with_video_with_gaze" not in model_name or "wout_scene" in model_name:
+        if (
+            "baseline" in model_name
+            or "Routeformer_with_video_with_gaze" not in model_name
+            or "wout_scene" in model_name
+        ):
             continue
         checkpoint_dir = DATASET_CACHE_DIR / "checkpoints" / EXPERIMENT_NAME / model_name
         checkpoint_dir.mkdir(exist_ok=True, parents=True)

@@ -23,9 +23,8 @@ class VideoBackboneConfig(BaseConfig):
 
     def __post_init__(self):
         if self.torchcache_enabled and self.train_backbone:
-            raise ValueError(
-                "torchcache_enabled and train_backbone cannot both be True."
-            )
+            raise ValueError("torchcache_enabled and train_backbone cannot both be True.")
+
 
 @dataclass
 class TimmBackboneConfig(VideoBackboneConfig):

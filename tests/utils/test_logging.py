@@ -20,9 +20,7 @@ def test_set_logger_config() -> None:
     assert logging.getLogger().handlers[0].formatter.datefmt == "%Y-%m-%d %H:%M:%S"
     # Also test various environment variable configurations
     os.environ["ROUTEFORMER_LOG_LEVEL"] = "DEBUG"
-    os.environ[
-        "ROUTEFORMER_LOG_FMT"
-    ] = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    os.environ["ROUTEFORMER_LOG_FMT"] = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     os.environ["ROUTEFORMER_LOG_DATEFMT"] = "%Y-%m-%d %H:%M:%S"
     os.environ["ROUTEFORMER_LOG_FILE"] = "test.log"
     set_logger_config()

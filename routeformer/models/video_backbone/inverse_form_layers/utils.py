@@ -55,9 +55,7 @@ def get_trunk(trunk_name, output_stride=8):
 
 class ConvBnRelu(nn.Module):
     # https://github.com/lingtengqiu/Deeperlab-pytorch/blob/master/seg_opr/seg_oprs.py
-    def __init__(
-        self, in_planes, out_planes, kernel_size, stride=1, padding=0, norm_layer=Norm2d
-    ):
+    def __init__(self, in_planes, out_planes, kernel_size, stride=1, padding=0, norm_layer=Norm2d):
         super(ConvBnRelu, self).__init__()
         self.conv = nn.Conv2d(
             in_planes,

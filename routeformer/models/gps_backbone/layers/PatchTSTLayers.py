@@ -36,9 +36,7 @@ def get_activation_fn(activation):
         return nn.ReLU()
     elif activation.lower() == "gelu":
         return nn.GELU()
-    raise ValueError(
-        f'{activation} is not available. You can use "relu", "gelu", or a callable'
-    )
+    raise ValueError(f'{activation} is not available. You can use "relu", "gelu", or a callable')
 
 
 # decomposition
@@ -97,9 +95,7 @@ def PositionalEncoding(q_len, d_model, normalize=True):
 SinCosPosEncoding = PositionalEncoding
 
 
-def Coord2dPosEncoding(
-    q_len, d_model, exponential=False, normalize=True, eps=1e-3, verbose=False
-):
+def Coord2dPosEncoding(q_len, d_model, exponential=False, normalize=True, eps=1e-3, verbose=False):
     x = 0.5 if exponential else 1
     i = 0
     for i in range(100):
@@ -123,10 +119,7 @@ def Coord2dPosEncoding(
 
 
 def Coord1dPosEncoding(q_len, exponential=False, normalize=True):
-    cpe = (
-        2 * (torch.linspace(0, 1, q_len).reshape(-1, 1) ** (0.5 if exponential else 1))
-        - 1
-    )
+    cpe = 2 * (torch.linspace(0, 1, q_len).reshape(-1, 1) ** (0.5 if exponential else 1)) - 1
     if normalize:
         cpe = cpe - cpe.mean()
         cpe = cpe / (cpe.std() * 10)

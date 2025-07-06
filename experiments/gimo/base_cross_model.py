@@ -32,14 +32,12 @@ class MultiHeadAttention(nn.Module):
         :return: (bs, lenq, d_model)
         """
         if not return_atts:
-            summed_v = self.attention(
-                q.permute(1, 0, 2), kv.permute(1, 0, 2), kv.permute(1, 0, 2)
-            )[0].permute(1, 0, 2)
+            summed_v = self.attention(q.permute(1, 0, 2), kv.permute(1, 0, 2), kv.permute(1, 0, 2))[
+                0
+            ].permute(1, 0, 2)
             return q + self.dropout(summed_v)
         else:
-            r = self.attention(
-                q.permute(1, 0, 2), kv.permute(1, 0, 2), kv.permute(1, 0, 2)
-            )
+            r = self.attention(q.permute(1, 0, 2), kv.permute(1, 0, 2), kv.permute(1, 0, 2))
             summed_v = r[0].permute(1, 0, 2)
             return q + self.dropout(summed_v), r[1]
 
@@ -67,23 +65,16 @@ class PositionalEncoding(nn.Module):
         super(PositionalEncoding, self).__init__()
 
         # Not a parameter
-        self.register_buffer(
-            "pos_table", self._get_sinusoid_encoding_table(n_position, d_hid)
-        )
+        self.register_buffer("pos_table", self._get_sinusoid_encoding_table(n_position, d_hid))
 
     def _get_sinusoid_encoding_table(self, n_position, d_hid):
         """Sinusoid position encoding table"""
         # TODO: make it with torch instead of numpy
 
         def get_position_angle_vec(position):
-            return [
-                position / np.power(10000, 2 * (hid_j // 2) / d_hid)
-                for hid_j in range(d_hid)
-            ]
+            return [position / np.power(10000, 2 * (hid_j // 2) / d_hid) for hid_j in range(d_hid)]
 
-        sinusoid_table = np.array(
-            [get_position_angle_vec(pos_i) for pos_i in range(n_position)]
-        )
+        sinusoid_table = np.array([get_position_angle_vec(pos_i) for pos_i in range(n_position)])
         sinusoid_table[:, 0::2] = np.sin(sinusoid_table[:, 0::2])  # dim 2i
         sinusoid_table[:, 1::2] = np.cos(sinusoid_table[:, 1::2])  # dim 2i+1
 
@@ -101,9 +92,7 @@ class SelfAttention(nn.Module):
     def __init__(self, num_heads, num_channels, dropout=0.1):
         super(SelfAttention, self).__init__()
         self.norm = nn.LayerNorm(num_channels)
-        self.self_att = MultiHeadAttention(
-            num_heads, num_channels, num_channels, dropout
-        )
+        self.self_att = MultiHeadAttention(num_heads, num_channels, num_channels, dropout)
 
     def forward(self, enc_input, return_atts=False):
         x = self.norm(enc_input)
@@ -132,9 +121,7 @@ class CrossAttention(nn.Module):
         super(CrossAttention, self).__init__()
         self.q_norm = nn.LayerNorm(num_q_channels)
         self.kv_norm = nn.LayerNorm(num_kv_channels)
-        self.cross_att = MultiHeadAttention(
-            num_heads, num_q_channels, num_kv_channels, dropout
-        )
+        self.cross_att = MultiHeadAttention(num_heads, num_q_channels, num_kv_channels, dropout)
 
     def forward(self, q, kv, return_atts=False):
         q = self.q_norm(q)
@@ -147,9 +134,7 @@ class CrossAttentionLayer(nn.Module):
 
     def __init__(self, num_heads, num_q_channels, num_kv_channels, dropout=0.1):
         super(CrossAttentionLayer, self).__init__()
-        self.cross_att = CrossAttention(
-            num_heads, num_q_channels, num_kv_channels, dropout
-        )
+        self.cross_att = CrossAttention(num_heads, num_q_channels, num_kv_channels, dropout)
         self.mlp = PositionwiseFeedForward(num_q_channels, num_q_channels, dropout)
 
     def forward(self, q, kv, return_atts=False):

@@ -21,15 +21,15 @@ import cv2
 import numpy as np
 import pandas as pd
 import torch
-from tqdm.contrib.concurrent import process_map
 import zstd
 from natsort import natsorted
-from pyproj import Transformer
 from pympler import asizeof
+from pyproj import Transformer
 
 # from torchvision.io.image import read_image
 from torchvision.io.video import _read_from_stream
 from tqdm import tqdm
+from tqdm.contrib.concurrent import process_map
 
 from routeformer.score import estimate_pci
 from routeformer.visualize.plot import plot_gps_data_on_map
@@ -115,9 +115,7 @@ class TimeIt:
                 end_time = time()
                 execution_time = end_time - start_time
                 total_execution_time += execution_time
-                logger.debug(
-                    f"Execution time of {func.__name__}: {execution_time:.6f} seconds"
-                )
+                logger.debug(f"Execution time of {func.__name__}: {execution_time:.6f} seconds")
             avg_execution_time = total_execution_time / self.num_executions
             logger.debug(
                 f"""Average execution time of {func.__name__}:
@@ -150,9 +148,7 @@ class DreyeveFileStructure:
         self.video_garmin_fpath = session_dpath / "video_garmin.avi"
         self.video_sailency_fpath = session_dpath / "video_sailency.avi"
         self.video_etg_frames_fpath = session_dpath / "video_etg_frames" / "{:06d}.jpg"
-        self.video_garmin_frames_fpath = (
-            session_dpath / "video_garmin_frames" / "{:06d}.jpg"
-        )
+        self.video_garmin_frames_fpath = session_dpath / "video_garmin_frames" / "{:06d}.jpg"
 
     def get_session_ids(self):
         """Get the session IDs."""
@@ -258,9 +254,7 @@ class DreyeveFileStructureSessionLibrary:
     def __init__(self, root: str | Path) -> None:
         """Build a collection of all subject file structures in the Dreyeve dataset."""
         self.fs = DreyeveFileStructure(root)
-        self.sessions = {
-            i: DreyeveFileStructureSession(root, i) for i in self.fs.get_session_ids()
-        }
+        self.sessions = {i: DreyeveFileStructureSession(root, i) for i in self.fs.get_session_ids()}
 
         self.data_design = pd.read_csv(
             self.fs.design_fpath,
@@ -429,9 +423,7 @@ class DreyeveDataset(torch.utils.data.Dataset):
         self.cache_dpath = Path(cache_dir) / "dreyeve_dataset"
         self.cache_metadata_fpath = self.cache_dpath / "metadata.json"
         self.cache_pci_fpath = self.cache_dpath / (
-            f"pci_stepsize-{self.step_size}.json"
-            if self.step_size != 1
-            else "pci.json"
+            f"pci_stepsize-{self.step_size}.json" if self.step_size != 1 else "pci.json"
         )
         self.cache_gps_metadata_fpath = self.cache_dpath / "gps_metadata.json"
         self.use_frames = use_frames
@@ -484,11 +476,7 @@ class DreyeveDataset(torch.utils.data.Dataset):
         n_samples_per_bin_val = 60
         self.data_bins = {}
 
-        self.data = [
-            entry
-            for entry in self.data
-            if entry["pci"] >= self.min_pci
-        ]
+        self.data = [entry for entry in self.data if entry["pci"] >= self.min_pci]
         if self.enable_pci_split:
             self.data = sorted(self.data, key=lambda x: x["pci"])
             (
@@ -597,7 +585,9 @@ class DreyeveDataset(torch.utils.data.Dataset):
                     skiprows=1,
                 )
 
-                gaze_metadata["X"] = gaze_metadata["X"].interpolate()  # .fillna(method='ffill', inplace=True)
+                gaze_metadata["X"] = gaze_metadata[
+                    "X"
+                ].interpolate()  # .fillna(method='ffill', inplace=True)
                 gaze_metadata["Y"] = gaze_metadata["Y"].interpolate()
                 # self.metadata[subject.subject_id]["gaze"] = gaze_metadata
 
@@ -645,8 +635,12 @@ class DreyeveDataset(torch.utils.data.Dataset):
                 gps_metadata[["lat", "lon"]] = self._convert_gps_coordinates(
                     gps_metadata[["lat", "lon"]].values
                 )
-                gps_metadata["course"] = gps_metadata["course"].interpolate()  # fillna(method='ffill', inplace=True)
-                gps_metadata["speed"] = gps_metadata["speed"].interpolate()  # fillna(method='ffill', inplace=True)
+                gps_metadata["course"] = gps_metadata[
+                    "course"
+                ].interpolate()  # fillna(method='ffill', inplace=True)
+                gps_metadata["speed"] = gps_metadata[
+                    "speed"
+                ].interpolate()  # fillna(method='ffill', inplace=True)
                 gps_metadata["lat"] = gps_metadata["lat"].interpolate(
                     limit_area="inside", method="pchip"
                 )
@@ -691,14 +685,10 @@ class DreyeveDataset(torch.utils.data.Dataset):
                 "session_id"
             ].tolist()
             self.metadata = {
-                key: value
-                for key, value in self.metadata.items()
-                if key in filtered_ids
+                key: value for key, value in self.metadata.items() if key in filtered_ids
             }
 
-        metadata = {
-            k: self.metadata[k] for k in self.metadata.keys() if k in self.split
-        }
+        metadata = {k: self.metadata[k] for k in self.metadata.keys() if k in self.split}
         return metadata
 
     def _extract_frames(self, start_frame, end_frame, container):
@@ -861,19 +851,12 @@ class DreyeveDataset(torch.utils.data.Dataset):
 
         data = []
         for session_id, session_metadata in metadata.items():
-            if (
-                should_rebuild_pci
-                or str(session_id) not in pci_dict["pci"].keys()
-            ):
+            if should_rebuild_pci or str(session_id) not in pci_dict["pci"].keys():
                 pci_dict["pci"][str(session_id)] = {}
 
             n_frames = session_metadata.shape[0]
             for i in range(0, n_frames - seq_length * fps_divisor, step_size_frames):
-                if (
-                    should_rebuild_pci
-                    or str(i)
-                    not in pci_dict["pci"][str(session_id)].keys()
-                ):
+                if should_rebuild_pci or str(i) not in pci_dict["pci"][str(session_id)].keys():
                     is_cache_invalidated = True
                     input_gps = np.array(
                         session_metadata[["lat", "lon"]][
@@ -896,20 +879,12 @@ class DreyeveDataset(torch.utils.data.Dataset):
                         frequency=self.output_fps,
                         measure="frechet",
                     )
-                    pci_dict["pci"][str(session_id)][
-                        str(i)
-                    ] = pci
+                    pci_dict["pci"][str(session_id)][str(i)] = pci
                 else:
-                    pci = pci_dict["pci"][str(session_id)][
-                        str(i)
-                    ]
+                    pci = pci_dict["pci"][str(session_id)][str(i)]
 
-                if (
-                    self.min_pci is not None
-                    and pci < self.min_pci
-                ) or (
-                    self.max_pci is not None
-                    and pci > self.max_pci
+                if (self.min_pci is not None and pci < self.min_pci) or (
+                    self.max_pci is not None and pci > self.max_pci
                 ):
                     # start_time += self.step_size
                     continue
@@ -1066,14 +1041,10 @@ class DreyeveDataset(torch.utils.data.Dataset):
             max_seq = max(n_frames_gar, n_frames_etg)
 
             frame_ids_gar = list(
-                session_metadata["frame_gar"][
-                    start_index : start_index + seq_length * fps_divisor
-                ]
+                session_metadata["frame_gar"][start_index : start_index + seq_length * fps_divisor]
             )[::fps_divisor]
             frame_ids_etg = list(
-                session_metadata["frame_etg"][
-                    start_index : start_index + seq_length * fps_divisor
-                ]
+                session_metadata["frame_etg"][start_index : start_index + seq_length * fps_divisor]
             )[::fps_divisor]
 
             if self.use_frames:
@@ -1089,12 +1060,8 @@ class DreyeveDataset(torch.utils.data.Dataset):
                 )
 
             else:
-                frame_ids_gar = [
-                    frame_id - start_frame_gar for frame_id in frame_ids_gar
-                ]
-                frame_ids_etg = [
-                    frame_id - start_frame_etg for frame_id in frame_ids_etg
-                ]
+                frame_ids_gar = [frame_id - start_frame_gar for frame_id in frame_ids_gar]
+                frame_ids_etg = [frame_id - start_frame_etg for frame_id in frame_ids_etg]
 
                 frames_gar = self._read_video(
                     self.fs_sessions[session_id].video_garmin_fpath,
@@ -1157,24 +1124,16 @@ class DreyeveDataset(torch.utils.data.Dataset):
             self.memory_cache_size += item_size
         else:
             logger.info("Memory cache full, not loading more data in memory")
-            
+
         return
 
     def __postprocess(self, data):
         """Postprocess the data after an uncached item is created."""
         if self.with_video:
-            data["train"]["left_video"] = (
-                data["train"]["left_video"].astype(np.float16) / 255.0
-            )
-            data["train"]["front_video"] = (
-                data["train"]["front_video"].astype(np.float16) / 255.0
-            )
-            data["target"]["left_video"] = (
-                data["target"]["left_video"].astype(np.float16) / 255.0
-            )
-            data["target"]["front_video"] = (
-                data["target"]["front_video"].astype(np.float16) / 255.0
-            )
+            data["train"]["left_video"] = data["train"]["left_video"].astype(np.float16) / 255.0
+            data["train"]["front_video"] = data["train"]["front_video"].astype(np.float16) / 255.0
+            data["target"]["left_video"] = data["target"]["left_video"].astype(np.float16) / 255.0
+            data["target"]["front_video"] = data["target"]["front_video"].astype(np.float16) / 255.0
             if self.crop_videos:
                 self._crop_videos(data)
 
@@ -1221,9 +1180,7 @@ class DreyeveDataset(torch.utils.data.Dataset):
                     return data, entry
                 return data
 
-        data = self.__get_uncached_item(
-            session_id, start_index, seq_length, fps_divisor
-        )
+        data = self.__get_uncached_item(session_id, start_index, seq_length, fps_divisor)
         data["pci"] = pci
 
         if self.use_data_cache and self._cache_size < self.max_cache_size:

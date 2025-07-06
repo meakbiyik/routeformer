@@ -120,19 +120,12 @@ class InverseForm(VideoBackboneModule):
 
         updated_pretrained_dict = {}
         for k, v in pretrained_dict.items():
-            if (
-                k.startswith("model")
-                or k.startswith("modules")
-                or k.startswith("module")
-            ):
+            if k.startswith("model") or k.startswith("modules") or k.startswith("module"):
                 k = ".".join(k.split(".")[1:])
             if k.startswith("backbone"):
                 k = ".".join(k.split(".")[1:])
 
-            if (
-                k in updated_model_dict.keys()
-                and model_dict[lookup_table[k]].shape == v.shape
-            ):
+            if k in updated_model_dict.keys() and model_dict[lookup_table[k]].shape == v.shape:
                 updated_pretrained_dict[updated_model_dict[k]] = v
 
         model_dict.update(updated_pretrained_dict)
@@ -178,9 +171,7 @@ class InverseForm(VideoBackboneModule):
         # Re-arrange the batch dimensions
         # Cast it just in case to the same dtype as the input, who knows
         # what happens in the torch.autocast context manager
-        embeddings = embeddings.reshape(-1, *self.output_feature_shape).to(
-            dtype=images.dtype
-        )
+        embeddings = embeddings.reshape(-1, *self.output_feature_shape).to(dtype=images.dtype)
 
         return embeddings
 

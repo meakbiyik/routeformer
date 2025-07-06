@@ -107,9 +107,7 @@ class FEDformer(L.LightningModule):
         self.encoder = Encoder(
             [
                 EncoderLayer(
-                    AutoCorrelationLayer(
-                        encoder_self_att, configs.d_model, configs.n_heads
-                    ),
+                    AutoCorrelationLayer(encoder_self_att, configs.d_model, configs.n_heads),
                     configs.d_model,
                     configs.d_ff,
                     moving_avg=configs.moving_avg,
@@ -124,12 +122,8 @@ class FEDformer(L.LightningModule):
         self.decoder = Decoder(
             [
                 DecoderLayer(
-                    AutoCorrelationLayer(
-                        decoder_self_att, configs.d_model, configs.n_heads
-                    ),
-                    AutoCorrelationLayer(
-                        decoder_cross_att, configs.d_model, configs.n_heads
-                    ),
+                    AutoCorrelationLayer(decoder_self_att, configs.d_model, configs.n_heads),
+                    AutoCorrelationLayer(decoder_cross_att, configs.d_model, configs.n_heads),
                     configs.d_model,
                     configs.c_out,
                     configs.d_ff,
@@ -178,9 +172,7 @@ class FEDformer(L.LightningModule):
         seasonal_init, trend_init = self.decomp(x_enc)
         # decoder input
         trend_init = torch.cat([trend_init[:, -self.label_len :, :], mean], dim=1)
-        seasonal_init = F.pad(
-            seasonal_init[:, -self.label_len :, :], (0, 0, 0, self.pred_len)
-        )
+        seasonal_init = F.pad(seasonal_init[:, -self.label_len :, :], (0, 0, 0, self.pred_len))
         # enc
         enc_out = self.enc_embedding(x_enc, x_mark_enc)
         enc_out, attns = self.encoder(enc_out)

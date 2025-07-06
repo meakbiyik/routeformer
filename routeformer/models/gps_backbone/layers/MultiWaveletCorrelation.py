@@ -209,8 +209,7 @@ class MultiWaveletCross(nn.Module):
             dq, sq = Ud_q[i], Us_q[i]
             dv, sv = Ud_v[i], Us_v[i]
             Ud += [
-                self.attn1(dq[0], dk[0], dv[0], mask)[0]
-                + self.attn2(dq[1], dk[1], dv[1], mask)[0]
+                self.attn1(dq[0], dk[0], dv[0], mask)[0] + self.attn2(dq[1], dk[1], dv[1], mask)[0]
             ]
             Us += [self.attn3(sq, sk, sv, mask)[0]]
         v = self.attn4(q, k, v, mask)[0]
@@ -274,16 +273,12 @@ class FourierCrossAttentionW(nn.Module):
         self.index_k_v = list(range(0, min(int(xv.shape[3] // 2), self.modes1)))
 
         # Compute Fourier coefficients
-        xq_ft_ = torch.zeros(
-            B, H, E, len(self.index_q), device=xq.device, dtype=torch.cfloat
-        )
+        xq_ft_ = torch.zeros(B, H, E, len(self.index_q), device=xq.device, dtype=torch.cfloat)
         xq_ft = torch.fft.rfft(xq, dim=-1)
         for i, j in enumerate(self.index_q):
             xq_ft_[:, :, :, i] = xq_ft[:, :, :, j]
 
-        xk_ft_ = torch.zeros(
-            B, H, E, len(self.index_k_v), device=xq.device, dtype=torch.cfloat
-        )
+        xk_ft_ = torch.zeros(B, H, E, len(self.index_k_v), device=xq.device, dtype=torch.cfloat)
         xk_ft = torch.fft.rfft(xk, dim=-1)
         for i, j in enumerate(self.index_k_v):
             xk_ft_[:, :, :, i] = xk_ft[:, :, :, j]
@@ -294,9 +289,7 @@ class FourierCrossAttentionW(nn.Module):
             xqk_ft = torch.softmax(abs(xqk_ft), dim=-1)
             xqk_ft = torch.complex(xqk_ft, torch.zeros_like(xqk_ft))
         else:
-            raise Exception(
-                "{} actiation function is not implemented".format(self.activation)
-            )
+            raise Exception("{} actiation function is not implemented".format(self.activation))
         xqkv_ft = torch.einsum("bhxy,bhey->bhex", xqk_ft, xk_ft_)
 
         xqkvw = xqkv_ft
@@ -304,9 +297,9 @@ class FourierCrossAttentionW(nn.Module):
         for i, j in enumerate(self.index_q):
             out_ft[:, :, :, j] = xqkvw[:, :, :, i]
 
-        out = torch.fft.irfft(
-            out_ft / self.in_channels / self.out_channels, n=xq.size(-1)
-        ).permute(0, 3, 2, 1)
+        out = torch.fft.irfft(out_ft / self.in_channels / self.out_channels, n=xq.size(-1)).permute(
+            0, 3, 2, 1
+        )
         # size = [B, L, H, E]
         return (out, None)
 
@@ -345,9 +338,7 @@ class sparseKernelFT1d(nn.Module):
 
 # ##
 class MWT_CZ1d(nn.Module):
-    def __init__(
-        self, k=3, alpha=64, L=0, c=1, base="legendre", initializer=None, **kwargs
-    ):
+    def __init__(self, k=3, alpha=64, L=0, c=1, base="legendre", initializer=None, **kwargs):
         super(MWT_CZ1d, self).__init__()
 
         self.k = k
@@ -430,9 +421,9 @@ class LocalMask:
         mask_shape = [B, 1, L, S]
         with torch.no_grad():
             self.len = np.ceil(np.log2(L))
-            self._mask1 = torch.triu(
-                torch.ones(mask_shape, dtype=torch.bool), diagonal=1
-            ).to(device)
+            self._mask1 = torch.triu(torch.ones(mask_shape, dtype=torch.bool), diagonal=1).to(
+                device
+            )
             self._mask2 = ~torch.triu(
                 torch.ones(mask_shape, dtype=torch.bool), diagonal=-self.len
             ).to(device)
@@ -508,10 +499,7 @@ def get_phi_psi(k, base):
             prod_ = np.convolve(a, a)
             prod_[np.abs(prod_) < 1e-8] = 0
             norm1 = (
-                prod_
-                * 1
-                / (np.arange(len(prod_)) + 1)
-                * np.power(0.5, 1 + np.arange(len(prod_)))
+                prod_ * 1 / (np.arange(len(prod_)) + 1) * np.power(0.5, 1 + np.arange(len(prod_)))
             ).sum()
 
             a = psi2_coeff[ki, :]
@@ -545,10 +533,7 @@ def get_phi_psi(k, base):
                 )
                 coeff_ = Poly(chebyshevt(ki, 4 * x - 1), x).all_coeffs()
                 phi_2x_coeff[ki, : ki + 1] = np.flip(
-                    np.sqrt(2)
-                    * 2
-                    / np.sqrt(np.pi)
-                    * np.array(coeff_).astype(np.float64)
+                    np.sqrt(2) * 2 / np.sqrt(np.pi) * np.array(coeff_).astype(np.float64)
                 )
 
         phi = [partial(phi_, phi_coeff[i, :]) for i in range(k)]
@@ -620,21 +605,13 @@ def get_filter(base, k):
 
         for ki in range(k):
             for kpi in range(k):
-                H0[ki, kpi] = (
-                    1 / np.sqrt(2) * (wm * phi[ki](x_m / 2) * phi[kpi](x_m)).sum()
-                )
+                H0[ki, kpi] = 1 / np.sqrt(2) * (wm * phi[ki](x_m / 2) * phi[kpi](x_m)).sum()
                 G0[ki, kpi] = (
-                    1
-                    / np.sqrt(2)
-                    * (wm * psi(psi1, psi2, ki, x_m / 2) * phi[kpi](x_m)).sum()
+                    1 / np.sqrt(2) * (wm * psi(psi1, psi2, ki, x_m / 2) * phi[kpi](x_m)).sum()
                 )
-                H1[ki, kpi] = (
-                    1 / np.sqrt(2) * (wm * phi[ki]((x_m + 1) / 2) * phi[kpi](x_m)).sum()
-                )
+                H1[ki, kpi] = 1 / np.sqrt(2) * (wm * phi[ki]((x_m + 1) / 2) * phi[kpi](x_m)).sum()
                 G1[ki, kpi] = (
-                    1
-                    / np.sqrt(2)
-                    * (wm * psi(psi1, psi2, ki, (x_m + 1) / 2) * phi[kpi](x_m)).sum()
+                    1 / np.sqrt(2) * (wm * psi(psi1, psi2, ki, (x_m + 1) / 2) * phi[kpi](x_m)).sum()
                 )
 
         PHI0 = np.eye(k)
@@ -651,27 +628,17 @@ def get_filter(base, k):
 
         for ki in range(k):
             for kpi in range(k):
-                H0[ki, kpi] = (
-                    1 / np.sqrt(2) * (wm * phi[ki](x_m / 2) * phi[kpi](x_m)).sum()
-                )
+                H0[ki, kpi] = 1 / np.sqrt(2) * (wm * phi[ki](x_m / 2) * phi[kpi](x_m)).sum()
                 G0[ki, kpi] = (
-                    1
-                    / np.sqrt(2)
-                    * (wm * psi(psi1, psi2, ki, x_m / 2) * phi[kpi](x_m)).sum()
+                    1 / np.sqrt(2) * (wm * psi(psi1, psi2, ki, x_m / 2) * phi[kpi](x_m)).sum()
                 )
-                H1[ki, kpi] = (
-                    1 / np.sqrt(2) * (wm * phi[ki]((x_m + 1) / 2) * phi[kpi](x_m)).sum()
-                )
+                H1[ki, kpi] = 1 / np.sqrt(2) * (wm * phi[ki]((x_m + 1) / 2) * phi[kpi](x_m)).sum()
                 G1[ki, kpi] = (
-                    1
-                    / np.sqrt(2)
-                    * (wm * psi(psi1, psi2, ki, (x_m + 1) / 2) * phi[kpi](x_m)).sum()
+                    1 / np.sqrt(2) * (wm * psi(psi1, psi2, ki, (x_m + 1) / 2) * phi[kpi](x_m)).sum()
                 )
 
                 PHI0[ki, kpi] = (wm * phi[ki](2 * x_m) * phi[kpi](2 * x_m)).sum() * 2
-                PHI1[ki, kpi] = (
-                    wm * phi[ki](2 * x_m - 1) * phi[kpi](2 * x_m - 1)
-                ).sum() * 2
+                PHI1[ki, kpi] = (wm * phi[ki](2 * x_m - 1) * phi[kpi](2 * x_m - 1)).sum() * 2
 
         PHI0[np.abs(PHI0) < 1e-8] = 0
         PHI1[np.abs(PHI1) < 1e-8] = 0
