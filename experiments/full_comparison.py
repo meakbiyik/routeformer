@@ -60,8 +60,8 @@ LIMIT_TRAIN_BATCHES = float(os.getenv("LIMIT_TRAIN_BATCHES", 1))
 if DISCOUNTED_FACTOR == "default":
     DISCOUNTED_FACTOR = {
         0: 0.97,
-        # 100: 0.98,
-        # 200: 0.99,
+        100: 0.98,
+        200: 0.99,
     }
 else:
     DISCOUNTED_FACTOR = {
